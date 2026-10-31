@@ -60,6 +60,13 @@
                       html: { method: :post }) do |f| %>
   <%= error_messages_for @folder %>
   <%= f.hidden_field :redirect_to_folder_id, value: @redirect_to_folder_id %>
+  <% if create %>
+    <%= render partial: 'dmsf/folder_chooser',
+               locals: { label: l(:label_dmsf_create_in_folder), project: @project, value: @parent&.id,
+                         current: @parent ? @parent.dmsf_path.map(&:title).join(' / ') : l(:link_documents),
+                         navigate: new_dmsf_path(id: @project, parent_id: '__FOLDER__'),
+                         navigate_root: new_dmsf_path(id: @project) } %>
+  <% end %>
   <div class="box tabular">    
     <p>                
       <%= f.text_field :title, required: true %>

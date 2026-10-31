@@ -252,13 +252,6 @@ span.fileover {
     overflow: hidden;
 }
 
-.dmsf-add-link {
-    display: block;
-    float: right;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
 #dmsf_attachments_fields input.description {
     margin-left: 4px;
     width: 340px;
@@ -359,4 +352,138 @@ div.dmsf-scroll {
 /* Wiki toolbar */
 .jstb_dmsf {
     background-image: url("/document.png");
+}
+
+
+/* Attach from DMS dialog */
+.dmsf-attach-file {
+    cursor: pointer;
+    margin: 0;
+    float: none;
+    width: auto;
+    text-align: left;
+}
+
+.dmsf-attach-file input {
+    margin: 0 4px 0 0;
+}
+
+/* Upload and attach buttons of the upload form */
+.dmsf-upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+/* Two classes, to outweigh Redmine's span.add_attachment and keep both buttons the same size */
+.dmsf-upload-actions .dmsf-action-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: inherit;
+    line-height: normal;
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #f2f2f2;
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dmsf-upload-actions .dmsf-action-button:hover {
+    background: #ddd;
+    color: #333;
+    text-decoration: none;
+}
+
+/* The native file input stays clickable, invisibly covering its button */
+.dmsf-upload-actions .dmsf-action-button input[type=file] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* A disabled input ignores clicks, so let them reach the button, which then asks for a folder */
+.dmsf-upload-actions .dmsf-action-button input[type=file]:disabled {
+    pointer-events: none;
+}
+
+/* Folder picker */
+.dmsf-folder-chooser {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.dmsf-folder-chooser-path {
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+#dmsf-folder-filter {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.dmsf-folder-tree, .dmsf-folder-tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dmsf-folder-tree ul {
+    padding-left: 18px;
+}
+
+.dmsf-folder-tree {
+    height: 55vh;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 4px;
+    margin-bottom: 10px;
+}
+
+.dmsf-folder-row {
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    overflow-wrap: anywhere;
+}
+
+.dmsf-folder-picked {
+    background-color: #ffe9b3;
+}
+
+.dmsf-folder-toggle {
+    flex: 0 0 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dmsf-folder-toggle::before {
+    content: "\25BE";
+}
+
+.dmsf-folder-collapsed > .dmsf-folder-row > .dmsf-folder-toggle::before {
+    content: "\25B8";
+}
+
+.dmsf-folder-toggle.dmsf-folder-leaf {
+    cursor: default;
+}
+
+.dmsf-folder-toggle.dmsf-folder-leaf::before {
+    content: "";
+}
+
+.dmsf-folder-collapsed:not(.dmsf-folder-filtering) > ul {
+    display: none;
 }

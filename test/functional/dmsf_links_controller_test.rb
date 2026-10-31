@@ -64,6 +64,81 @@ class DmsfLinksControllerTest < RedmineDmsf::Test::TestCase
     assert_response :forbidden
   end
 
+  def attach_dialog
+    get '/dmsf_links/new', params: { project_id: @project1.id, type: 'link_from', container: 'Issue' }, xhr: true
+    assert_response :success
+    response.body
+  end
+
+  def attach_params(file_id)
+    { dmsf_link: { project_id: @project1.id, type: 'link_from', container: 'Issue', target_file_id: file_id } }
+  end
+
+  def test_attach_dialog_lists_documents_in_a_tree
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    body = attach_dialog
+    file = DmsfFile.find 4
+    assert_includes body, file.title
+    assert_includes body, file.dmsf_folder.title
+  end
+
+  def test_attach_dialog_hides_deleted_documents
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    file = DmsfFile.find 3
+    assert file.deleted?
+    assert_not_includes attach_dialog, %(value=\\"#{file.id}\\")
+  end
+
+  def test_attach_dialog_hides_system_folders
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    assert_not_includes attach_dialog, Issue.find(1).system_folder(create: true).title
+  end
+
+  def test_attach_dialog_hides_documents_without_view_permission
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    @role_manager.remove_permission! :view_dmsf_files
+    assert_not_includes attach_dialog, 'dmsf_attach_file_ids'
+  end
+
+  def test_attach_dialog_is_used_for_a_container
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    get '/dmsf_links/new', params: { project_id: @project1.id, type: 'link_from', container: 'Issue' },
+                           xhr: true
+    assert_response :success
+    assert_includes response.body, 'dmsfInitAttachPicker'
+  end
+
+  def test_attach_derives_name_and_project_and_avoids_name_clash
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    file = DmsfFile.find 1
+    2.times { post '/dmsf_links', params: attach_params(file.id), xhr: true }
+    assert_response :success
+    assert_equal [file.title, "#{file.title} (2)"], DmsfLink.where(project_id: -1).order(:id).last(2).map(&:name)
+    assert_equal file.project_id, DmsfLink.where(project_id: -1).last.target_project_id
+  end
+
+  def test_attach_forbidden_for_a_file_the_user_cannot_view
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    @role_manager.remove_permission! :view_dmsf_files
+    assert_no_difference 'DmsfLink.count' do
+      post '/dmsf_links', params: attach_params(1), xhr: true
+    end
+    assert_response :forbidden
+  end
+
+  def test_issue_offers_unlink_for_an_attached_link
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    issue = Issue.find 1
+    link = DmsfLink.create!(project_id: issue.project_id, dmsf_folder_id: issue.system_folder(create: true).id,
+                            target_project_id: 1, target_id: 1, target_type: 'DmsfFile', name: 'attached',
+                            user: @jsmith)
+    with_settings plugin_redmine_dmsf: Setting.plugin_redmine_dmsf.merge('dmsf_act_as_attachable' => '1') do
+      get "/issues/#{issue.id}"
+    end
+    assert_response :success
+    assert_select "a[title='Unlink'][data-method='delete'][href^='#{dmsf_link_path(link)}']"
+  end
+
   def test_new
     post '/login', params: { username: 'jsmith', password: 'jsmith' }
     get '/dmsf_links/new', params: { project_id: @project1.id, type: 'link_to' }

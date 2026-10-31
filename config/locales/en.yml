@@ -292,6 +292,23 @@ en:
 
   title_create_link: Create a symbolic link
   label_link_from: Link from
+  title_attach_from_dms: Attach from DMS
+  label_dmsf_upload_to_dms: Upload to DMS
+  label_dmsf_filter_documents: Type to filter folders and documents
+  button_dmsf_attach: Attach
+  label_dmsf_upload_file: Upload file
+  button_dmsf_unlink: Unlink
+  label_dmsf_save_to_folder: Save to folder
+  label_dmsf_create_in_folder: Create in folder
+  label_dmsf_choose_folder: Choose a folder
+  label_dmsf_filter_folders: Type to filter folders
+  button_dmsf_change: Change
+  button_dmsf_select: Select
+  label_dmsf_no_folder: not selected
+  text_dmsf_choose_folder_first: Choose a folder first, or use Files for an ordinary attachment.
+  warning_dmsf_target_folder_invalid: No available folder was selected, so the files were not saved to DMS.
+  text_dmsf_unlink_confirmation: Remove this document from the issue? The document itself stays in DMS.
+  text_dmsf_delete_to_trash_confirmation: Move this document to the DMS trash? It will disappear from every issue that uses it.
   label_link_to: Link to
   label_notifications_on: Turn on notifications
   label_notifications_off: Turn off notifications

@@ -78,7 +78,9 @@
   <% end %>
 </span>
 
-<span class="dmsf_add_attachment add_attachment">
+<% folder_required = defined?(container) && container && params[:dmsf_target_folder_id].blank? %>
+<span class="dmsf-upload-actions">
+<span class="dmsf_add_attachment add_attachment dmsf-action-button">
   <%
     if defined?(container) && container
       project = container.project
@@ -101,6 +103,7 @@
   <%= file_field_tag 'dmsf_attachments[dummy][file]',
                    id: nil,
                    class: 'file_selector',
+                   disabled: folder_required,
                    multiple: multiple,
                    onchange: 'dmsfAddInputFiles(this);',
                    data: {
@@ -122,14 +125,24 @@
                        files: JSON.generate(files)
                    }
   %>
+  <%= sprite_icon('attachment', l(:label_dmsf_upload_file)) %>
 </span>
 <% if defined?(container) && container %>
-    <span class="dmsf-add-link">
-        <%= link_to sprite_icon('add', l(:label_link_from)),
-                    new_dmsf_link_path(project_id: project&.id, type: 'link_from', container: container.class.name),
-                    title: l(:title_create_link), class: 'icon icon-add file_selector', remote: true %>
-      </span>
+  <%= link_to sprite_icon('link', l(:title_attach_from_dms)),
+              new_dmsf_link_path(project_id: project&.id, type: 'link_from', container: container.class.name),
+              title: l(:title_attach_from_dms), class: 'dmsf-action-button', remote: true %>
 <% end %>
 <span class="info">
     (<%= l(:label_max_size) %>: <%= number_to_human_size(Setting.attachment_max_size.to_i.kilobytes) %>)
 </span>
+</span>
+<% if defined?(container) && container&.project %>
+  <%= render partial: 'dmsf/folder_chooser',
+             locals: { label: l(:label_dmsf_save_to_folder), project: container.project,
+                       input_name: 'dmsf_target_folder_id', value: params[:dmsf_target_folder_id],
+                       current: DmsfFolder.upload_target_label(container.project,
+                                                               params[:dmsf_target_folder_id]) } %>
+<% end %>
+<% if folder_required %>
+  <span class="info dmsf-folder-required"><%= l(:text_dmsf_choose_folder_first) %></span>
+<% end %>

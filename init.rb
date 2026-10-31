@@ -105,7 +105,7 @@ Redmine::AccessControl.map do |map|
   map.project_module :dmsf do |pmap|
     pmap.permission :view_dmsf_file_revision_accesses, {}, read: true
     pmap.permission :view_dmsf_file_revisions, {}, read: true
-    pmap.permission :view_dmsf_folders, { dmsf: %i[show index] }, read: true
+    pmap.permission :view_dmsf_folders, { dmsf: %i[show index folder_picker] }, read: true
     pmap.permission :user_preferences, { dmsf_state: [:user_pref_save] }, require: :member
     pmap.permission(:view_dmsf_files,
                     {

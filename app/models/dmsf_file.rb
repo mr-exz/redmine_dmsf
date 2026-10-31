@@ -186,6 +186,13 @@ class DmsfFile < ApplicationRecord
     deleted == STATUS_DELETED
   end
 
+  # Can the current user attach this document to an issue from the DMS?
+  def attachable_from_dms?
+    return false if deleted? || last_revision.nil? || dmsf_folder&.deleted?
+
+    visible? && DmsfFolder.permissions?(dmsf_folder, allow_system: false)
+  end
+
   def created_on
     created_at
   end
@@ -309,6 +316,11 @@ class DmsfFile < ApplicationRecord
   end
 
   # Returns an array of projects that current user can copy file to
+  # Documents of the project the current user can attach to an issue, by folder id
+  def self.attachable_in(project)
+    visible.where(project_id: project.id).select(&:attachable_from_dms?).sort_by(&:title).group_by(&:dmsf_folder_id)
+  end
+
   def self.allowed_target_projects_on_copy
     projects = []
     if User.current.admin?

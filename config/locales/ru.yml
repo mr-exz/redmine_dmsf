@@ -1,0 +1,514 @@
+#
+# Redmine plugin for Document Management System "Features"
+#
+#  Vít Jonáš <vit.jonas@gmail.com>, Daniel Munn <dan.munn@munnster.co.uk>, Karel Pičman <karel.picman@kontron.com>
+#
+# This file is part of Redmine DMSF plugin.
+#
+# Redmine DMSF plugin is free software: you can redistribute it and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Redmine DMSF plugin is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with Redmine DMSF plugin. If not, see
+# <https://www.gnu.org/licenses/>.
+
+ru:
+  dmsf: DMS # Custom fields tab title
+  label_dmsf_file: Документ DMS
+  label_dmsf_file_plural: Документы DMS # Email subject & Search options
+  label_dmsf_file_revision_plural: Редакции документа
+  label_dmsf_file_revision_access_plural: Обращения к документу
+  warning_no_entries_selected: Ничего не выбрано
+  error_email_to_must_be_entered: Необходимо указать получателя письма
+  warning_file_already_locked: Файл уже заблокирован
+  notice_file_locked: Файл заблокирован
+  warning_file_not_locked: Файл не заблокирован
+  notice_file_unlocked: Файл разблокирован
+  error_only_user_that_locked_file_can_unlock_it: Разблокировать файл может только заблокировавший его пользователь
+
+  error_max_files_exceeded: "Превышен лимит одновременно скачиваемых файлов: %{number}"
+  error_entry_project_does_not_match_current_project: "Проект элемента не совпадает с текущим проектом"
+
+  notice_folder_created: Папка создана
+  error_folder_creation_failed: Не удалось создать папку
+  error_folder_title_must_be_entered: Необходимо указать название
+  notice_folder_deleted: Папка удалена
+  error_folder_title_is_already_used: Название уже используется
+  notice_folder_details_were_saved: Сведения о папке сохранены
+  error_folder_is_locked: Папка заблокирована
+  error_file_is_locked: Файл заблокирован
+  notice_file_deleted: Файл удалён
+  error_at_least_one_revision_must_be_present: Должна остаться хотя бы одна редакция
+  notice_revision_deleted: Редакция удалена
+  notice_revision_obsoleted: Редакция помечена как устаревшая
+  warning_one_of_files_locked: Один из файлов заблокирован
+  notice_file_revision_created: Редакция файла создана
+  notice_your_preferences_were_saved: Настройки сохранены
+  notice_your_preferences_were_not_saved: Настройки не сохранены
+  warning_folder_notifications_already_activated: Уведомления для папки уже включены
+
+  notice_folder_notifications_activated: Уведомления для папки включены
+  warning_folder_notifications_already_deactivated: Уведомления для папки уже выключены
+
+  notice_folder_notifications_deactivated: Уведомления для папки выключены
+  warning_file_notifications_already_activated: Уведомления для файла уже включены
+
+  notice_file_notifications_activated: Уведомления для файла включены
+  warning_file_notifications_already_deactivated: Уведомления для файла уже выключены
+
+  notice_file_notifications_deactivated: Уведомления для файла выключены
+  link_details: "Сведения: %{title}"
+  link_edit: "Изменить %{title}"
+  link_create_folder: Создать папку
+  link_title: Название
+  link_size: Размер
+  link_modified: Изменён
+  link_ver: Вер.
+  link_author: Автор
+  title_check_for_zip_download_or_email: Отметьте для скачивания в zip или отправки по почте
+  title_check_for_restore_or_delete: Отметьте для восстановления или удаления
+
+  title_notifications_active_deactivate: "Уведомления включены: выключить"
+  title_notifications_not_active_activate: "Уведомления выключены: включить"
+  title_title_version_version_download: "Скачать %{title}, версия %{version}"
+  title_locked_by_user: "Заблокировал: %{user}"
+  title_waiting_for_approval: Ожидает согласования
+  title_approved: Согласован
+  title_unlock_file: Разблокировать, чтобы другие участники могли вносить изменения
+  title_lock_file: Заблокировать, чтобы другие участники не могли вносить изменения
+  title_download_checked: Скачать отмеченное в Zip-архиве
+  title_send_checked_by_email: Отправить отмеченное по почте
+  link_user_preferences: Ваши настройки DMS в проекте
+  heading_send_documents_by_email: Отправка документов по почте
+  label_email_from: От
+  label_email_to: Кому
+  label_email_cc: Копия
+  label_email_subject: Тема
+  label_email_documents: Документы
+  label_email_body: Текст
+  label_email_send: Отправить
+  title_notifications_active: Уведомления включены
+  label_upload: Загрузить
+  heading_new_folder: Новая папка
+  label_title: Название
+  label_description: Описание
+  submit_save: Сохранить
+  info_file_locked: Файл заблокирован!
+  label_notifications: Уведомления
+  select_option_default: По умолчанию
+  select_option_deactivated: Выключено
+  select_option_activated: Включено
+  label_title_format: Формат названия
+  text_title_format: "Формат названия документа при скачивании (%t - название, %f - файл, %d - дата, %v - версия, %i - ID, %r -
+    редакция). Пример: %t_%v"
+  title_save_preferences: Сохранить настройки
+  heading_revisions: Редакции
+  title_download: Скачать
+  title_delete_revision: Удалить редакцию
+  title_obsolete_revision: Пометить редакцию как устаревшую
+  label_created: Создан
+  label_changed: Изменён
+  info_changed_by_user: "%{changed}, автор:"
+  label_filename: Имя файла
+  label_mime: Тип
+  label_size: Размер
+  heading_new_revision: Новая редакция
+  option_version_same: Та же
+  option_version_patch: Исправление
+  option_version_minor: Минорная
+  option_version_major: Мажорная
+  option_version_custom: Другая
+  label_new_content: Новое содержимое
+  label_maximum_files_download: Максимум файлов при скачивании
+  note_maximum_number_of_files_downloaded: Ограничивает число файлов, скачиваемых в zip или отправляемых по почте. 0 — без
+    ограничений.
+  label_index_database: База индекса
+  label_stemming_language: Язык стемминга
+  note_possible_values: Возможные значения
+  note_pass_none_to_disable_stemming: "укажите 'none', чтобы отключить стемминг"
+  label_stem_strategy: Стратегия стемминга
+  option_stem_none: Без стемминга (по умолчанию)
+  option_stem_some: Частичный стемминг
+  option_stem_all: Полный стемминг
+  text_stemming_info: "Определяет, как анализатор запросов применяет алгоритм стемминга. Значение по умолчанию —
+    STEM_NONE. Возможные значения: STEM_NONE — стемминг не выполняется, STEM_SOME — поиск по основам слов, кроме слов с
+    заглавной буквы или слов, за которыми следуют определённые символы (сейчас:'/@<>=*[{\"'), или используемых с
+    операторами, которым нужны сведения о позиции. Основы слов получают префикс 'Z', STEM_ALL — поиск по основам всех
+    слов (примечание: префикс 'Z' не добавляется)."
+  label_default_notifications: Уведомления для файлов по умолчанию
+  heading_uploaded_files: Загруженные файлы
+  link_documents: Документы
+  permission_view_dmsf_file_revision_accesses: Просмотр скачиваний в ленте активности
+  permission_view_dmsf_file_revisions: Просмотр редакций в ленте активности
+  permission_view_dmsf_folders: Обзор документов
+  permission_user_preferences: Настройки пользователя
+  permission_view_dmsf_files: Просмотр документов
+  permission_folder_manipulation: Управление папками
+  permission_file_manipulation: Управление файлами
+  permission_force_file_unlock: Принудительная разблокировка файлов
+  permission_manage_workflows: Управление процессами согласования
+  permission_file_delete: Удаление документов
+  permission_display_system_folders: Показ системных папок
+  permission_file_approval: Согласование файлов
+  permission_email_documents: Отправка документов по почте
+  label_file: Файл
+  field_folder: Папка
+  error_file_commit_require_uploaded_file: Для сохранения нужен загруженный файл
+
+  warning_some_files_were_not_committed: "Некоторые файлы не сохранены из-за ошибок проверки: %{files}"
+
+  error_user_has_not_right_delete_folder: "У пользователя нет права удалять папки"
+
+  error_user_has_not_right_delete_file: "У пользователя нет права удалять файл"
+
+  notice_entries_deleted: Элементы удалены
+  warning_some_entries_were_not_deleted: "Некоторые элементы не удалены: %{entries}"
+  title_delete_checked: Удалить отмеченное
+  title_items: элементов
+  title_filename_for_download: Имя файла при скачивании или в Zip-архиве
+  label_number_of_folders: Папки
+  label_number_of_documents: Документы
+  error_file_storage_directory_does_not_exist: "Каталог хранения файлов не существует, и его не удаётся создать"
+
+  error_file_can_not_be_created: "Не удаётся создать файлы в каталоге хранения"
+  error_wrong_zip_encoding: Неверная кодировка Zip
+  warning_xapian_not_available: Xapian недоступен
+  menu_dmsf: DMS  # Project tab title
+  label_physical_file_delete: Физическое удаление файла
+  user_is_not_project_member: Вы не участник проекта
+  heading_access_downloads_emails: Скачивания/письма
+  heading_access_first: Первое
+  heading_access_last: Последнее
+  label_dmsf_updated: Обновлён
+  label_dmsf_downloaded: Скачан
+  title_total_size_of_all_files: Общий размер всех файлов в этой папке
+  project_module_dmsf: DMS  # Project module name
+  warning_no_project_to_copy_file_to: Нет проекта, в который можно скопировать файл
+  comment_copied_from: "Скопировано из %{source}"
+  field_target_project: Целевой проект
+  field_target_folder: Целевая папка
+  title_copy_or_move: Копировать/переместить
+  label_dmsf_folder_plural: Папки DMS # Search options
+  comment_moved_from: "Перемещено из %{source}"
+  error_target_folder_same: Целевая папка и проект совпадают с текущими.
+  title_copy: Копировать
+
+  error_max_email_filesize_exceeded: "Превышен максимальный размер файла для отправки по почте (%{number} МБ)"
+
+  note_maximum_email_filesize: Ограничивает размер файла для отправки по почте. 0 — без ограничений. Значение в МБ.
+
+  label_maximum_email_filesize: Максимальный размер вложения в письме
+  header_minimum_filesize: Ошибка файла.
+  error_minimum_filesize: "Файл %{file} имеет размер 0 байт и не будет прикреплён."
+  parent_directory: Родительский каталог
+  note_webdav: "После включения WebDAV доступен по адресу %{protocol}://%{domain}/dmsf/webdav/[идентификатор проекта]"
+
+  label_copy_dmsf: "Копировать документы и папки (файлов: %{files}, папок: %{folders})"
+  label_copy_only_dmsf_folders: "Копировать только папки (%{folders})"
+
+  warning_folder_already_locked: Эта папка уже заблокирована
+  notice_folder_locked: Папка заблокирована
+  warning_folder_not_locked: Не удалось заблокировать папку
+  notice_folder_unlocked: Папка разблокирована
+  error_only_user_that_locked_folder_can_unlock_it: У вас нет прав разблокировать эту папку
+
+  title_unlock_folder: Разблокировать, чтобы другие участники могли вносить изменения
+  title_lock_folder: Заблокировать, чтобы другие участники не могли вносить изменения
+
+  select_option_webdav_readonly: Только чтение
+  select_option_webdav_readwrite: Чтение и запись
+  label_webdav_strategy: Режим WebDAV
+
+  note_webdav_strategy: Позволяет администратору определить, доступен ли WebDAV пользователям только для чтения или также для
+    записи.
+
+  error_unable_delete_dmsf_workflow: Не удалось удалить процесс согласования
+  error_empty_note: "Примечание не может быть пустым"
+  error_workflow_assign: Ошибка при назначении
+  error_cannot_start_workflow: "Не удаётся запустить процесс согласования"
+  error_cannot_renumber_steps: "Не удаётся изменить нумерацию шагов"
+  label_dmsf_workflow_new: Новый процесс согласования
+  field_label_dmsf_workflow: Процесс согласования
+  field_label_dmsf_workflow_name: Название процесса согласования
+  label_dmsf_workflow_plural: Процессы согласования
+  label_dmsf_workflow_plural_num: Копировать процессы согласования (%{count})
+  label_dmsf_workflow_step: Шаг
+  label_dmsf_workflow_step_plural: Шаги
+  label_dmsf_workflow_approval_plural: Согласования
+  label_dmsf_wokflow_action_approve: Согласовать
+  label_dmsf_wokflow_action_reject: Отклонить
+  label_dmsf_wokflow_action_delegate: Передать
+  label_dmsf_wokflow_action_assign: Назначить процесс согласования
+  label_dmsf_wokflow_action_start: Запустить процесс
+  label_dmsf_workflow_add_approver: "Добавить согласующего с логической функцией:"
+  label_or: или
+  label_action: Действие
+  label_note: Примечание
+  title_none: Нет
+  title_rejection: Отклонение
+  title_delegation: Передача
+  title_assignment: Назначить процесс
+  title_start: Запустить процесс
+  title_dmsf_workflow_log: Журнал процесса согласования
+  title_assigned: Назначен
+  title_approval: Согласовать документ
+  title_rejected: Отклонён
+  title_obsolete: Устарел
+  dmsf_and: И
+  dmsf_or: ИЛИ
+  dmsf_new_step: Новый шаг
+  dmsf_new_step_or_approver: Новый шаг или согласующий
+  message_dmsf_wokflow_note: Ваше примечание...
+  info_revision: "р %{rev}"
+  link_workflow: Процесс
+  notice_workflow_started: Процесс согласования запущен
+  text_email_subject_approved: согласован
+  text_email_subject_rejected: отклонён
+  text_email_subject_delegated: передан
+  text_email_subject_requires_approval: требует вашего согласования
+  text_email_subject_updated: обновлён
+  text_email_subject_started: запущен
+  text_email_finished_approved: "Процесс согласования '%{name}', назначенный документу '%{filename}', завершён: документ
+    согласован."
+  text_email_finished_rejected: "Процесс согласования '%{name}', назначенный документу '%{filename}', завершён: документ
+    отклонён по причине '%{notice}'."
+  text_email_finished_delegated: "Процесс согласования '%{name}', назначенный документу '%{filename}', передан по причине
+    '%{notice}'. От вас ожидается согласование на текущем шаге '%{stepname}'."
+  text_email_finished_step: "В процессе согласования '%{name}', назначенном документу '%{filename}', завершён один из
+    шагов. От вас ожидается согласование на следующем шаге."
+  text_email_finished_step_short: "В процессе согласования '%{name}', назначенном документу '%{filename}', завершён один
+    из шагов."
+  text_email_started: "Запущен процесс согласования '%{name}', назначенный документу '%{filename}'. От вас ожидается
+    согласование на текущем шаге '%{stepname}'."
+  text_email_to_proceed: Чтобы продолжить, нажмите на значок рядом с документом в
+  text_email_to_see_history: Чтобы посмотреть историю согласования, нажмите на статус процесса у документа в
+
+  text_email_to_see_status: Чтобы посмотреть текущий статус процесса согласования, нажмите на статус процесса у документа
+    в
+
+  title_create_link: Создать символическую ссылку
+  label_link_from: Ссылка из
+  title_attach_from_dms: Прикрепить из DMS
+  label_dmsf_upload_to_dms: Загрузить в DMS
+  label_dmsf_filter_documents: Введите текст для поиска папок и документов
+  button_dmsf_attach: Прикрепить
+  label_dmsf_upload_file: Загрузить файл
+  button_dmsf_unlink: Открепить
+  label_dmsf_save_to_folder: Сохранить в папку
+  label_dmsf_create_in_folder: Создать в папке
+  label_dmsf_choose_folder: Выберите папку
+  label_dmsf_filter_folders: Введите текст для поиска папок
+  button_dmsf_change: Изменить
+  button_dmsf_select: Выбрать
+  label_dmsf_no_folder: не выбрана
+  text_dmsf_choose_folder_first: Сначала выберите папку или используйте «Файлы» для обычного вложения.
+  warning_dmsf_target_folder_invalid: Не выбрана доступная папка, поэтому файлы не сохранены в DMS.
+  text_dmsf_unlink_confirmation: Убрать этот документ из задачи? Сам документ останется в DMS.
+  text_dmsf_delete_to_trash_confirmation: Переместить этот документ в корзину DMS? Он исчезнет из всех задач, где используется.
+  label_link_to: Ссылка в
+  label_notifications_on: Включить уведомления
+  label_notifications_off: Выключить уведомления
+  field_target_file: Исходный файл
+  title_download_entries: Скачать элементы
+  label_external: Внешняя
+  label_internal: Внутренняя
+
+  label_link_name: Название ссылки
+  field_external_url: URL
+  label_target_folder: Целевая папка
+  label_source_folder: Исходная папка
+  label_target_project: Целевой проект
+  label_source_project: Исходный проект
+
+  text_email_doc_updated_subject: Документы обновлены
+  text_email_doc_updated: только что обновил(а) документы проекта
+  text_email_doc_follows: следующим образом
+  text_email_doc_deleted_subject: Документы удалены
+  text_email_doc_deleted: только что удалил(а) документы проекта
+  label_links_only: только ссылки
+
+  label_display_notified_recipients: Показывать получателей уведомлений
+  note_display_notified_recipients: Пользователь увидит всех получателей только что отправленного уведомления.
+
+  warning_email_notifications: "Уведомления отправлены: %{to}"
+
+  link_trash_bin: Корзина
+  title_restore: Восстановить
+  notice_dmsf_file_restored: Документ восстановлен
+  notice_dmsf_folder_restored: Папка восстановлена
+  notice_dmsf_link_restored: Ссылка восстановлена
+  title_restore_checked: Восстановить отмеченное
+  error_parent_folder: "Родительская папка не существует"
+
+  error_resource_or_parent_locked: Не удалось заблокировать — ресурс (или его родитель) уже заблокирован
+  error_parent_locked: Не удалось заблокировать — родитель ресурса заблокирован
+  error_resource_locked: Не удалось заблокировать — ресурс уже заблокирован
+  error_lock_exclusively: Нельзя монопольно заблокировать уже заблокированный ресурс
+  error_unlock_parent_locked: Не удалось разблокировать — родитель ресурса заблокирован
+
+  label_dmsf_version: Версия
+
+  locked_documents: Заблокированные документы
+  open_approvals: Открытые согласования
+  watched_documents: Отслеживаемые документы
+
+  error_maximum_upload_filecount: "Можно загрузить файлов не более: %{filecount}."
+
+  label_public_urls: Публичные ссылки действительны до
+
+  label_webdav: WebDAV
+  label_full_text: Полнотекстовый поиск
+  link_extension: Расш.
+
+  label_webdav_ignore: Шаблоны игнорируемых файлов
+  note_webdav_ignore: Регулярное выражение с именами файлов, которые игнорируются в запросах PUT.
+
+  label_document_url: Url
+  label_last_revision_id: Редакция
+  
+  label_webdav_disable_versioning: Шаблоны файлов без версионирования
+  note_webdav_disable_versioning: Регулярное выражение, отключающее версионирование для подходящих файлов. Шаблон по умолчанию
+    соответствует временным файлам MsOffice.
+
+  label_dmsf_keep_documents_locked: Оставлять документы заблокированными
+  note_dmsf_keep_documents_locked: После согласования документы останутся заблокированными
+  note_global: (глобально)
+  field_dmsf_not_inheritable: Не наследуется
+  
+  label_webdav_use_project_names: Использовать названия проектов для папок проектов
+  note_webdav_use_project_names: Использовать названия проектов вместо их идентификаторов для папок проектов.
+
+  label_last_approver: Последний согласующий
+
+  label_act_as_attachable: Прикрепление к объектам
+  note_dmsf_act_as_attachable: Позволяет прикреплять документы к объектам, например к задачам.
+
+  label_user_search_add: Поиск пользователя для добавления
+
+  label_dmsf_attachments: Вложения DMS
+  label_basic_attachments: Обычные вложения
+
+  label_email_from_override: От
+  text_email_from_override: Текущий пользователь
+  label_email_reply_to: Ответить на
+
+  label_enable_cjk_ngrams: Создавать n-граммы из текста CJK
+  text_enable_cjk_ngrams: "Если включено, последовательности символов CJK разбиваются на униграммы и биграммы, а
+    униграммы содержат сведения о позиции. Остальные символы разбиваются на слова как обычно."
+
+  label_dmsf_fast_links: Быстрые ссылки
+  text_dmsf_fast_links_info: При создании ссылок и перемещении файлов или папок можно будет вручную указывать ID целевой
+    папки, чтобы ускорить работу.
+
+  label_dmsf_permissions: Разрешить доступ только для
+  label_inherited_permissions: Унаследованный доступ для
+
+  button_edit_content: Изменить содержимое
+  field_workflow: Процесс
+  field_modified: Дата
+  field_updated: Дата
+  field_count: Скач.
+  field_first_at: Первое
+  field_last_at: Последнее
+  field_size: Размер
+  field_locked: Заблокирован
+
+  label_add_width: Добавить с помощью
+
+  dmsf_webdav_ignore_1b_file_for_authentication: Игнорировать файл 1 байт, отправляемый для аутентификации
+  dmsf_webdav_ignore_1b_file_for_authentication_info: Плагин WebDAV для Total Commander
+
+  text_not_empty: Папка не пуста.
+  label_scroll_down: Прокрутить вниз
+  note_webdav_disabled: WebDAV отключён. Обратитесь к администратору.
+
+  dmsf_copy: "Копия (%{n})"
+  label_empty_trash_bin: Очистить корзину
+  label_dmsf_projects_as_subfolders: Подпроекты как подпапки
+  note_dmsf_projects_as_subfolders: Показывать подпроекты как подпапки в DMS
+  only_approval_zero_minor_version: Согласование только при нулевой минорной версии
+  title_assignment_minor: Назначение запрещено, минорная версия должна быть нулевой
+  title_start_minor: Запуск запрещён, минорная версия должна быть нулевой
+  title_approval_minor: Согласование запрещено, минорная версия должна быть нулевой
+
+  label_project_watchers: Наблюдатели
+  label_dmsf_folder_watchers: Наблюдатели
+  label_dmsf_file_watchers: Наблюдатели
+  label_dmsf_watched: Отслеживаемые документы
+  dmsf_legacy_notifications: Устаревшие уведомления DMS
+  permission_view_dmsf_folder_watchers: Просмотр наблюдателей папки
+  permission_add_dmsf_folder_watchers: Добавление наблюдателей папки
+  permission_delete_dmsf_folder_watchers: Удаление наблюдателей папки
+  permission_view_dmsf_file_watchers: Просмотр наблюдателей документа
+  permission_add_dmsf_file_watchers: Добавление наблюдателей документа
+  permission_delete_dmsf_file_watchers: Удаление наблюдателей документа
+  permission_view_project_watchers: Просмотр наблюдателей проекта
+  permission_add_project_watchers: Добавление наблюдателей проекта
+  permission_delete_project_watchers: Удаление наблюдателей проекта
+  label_dmsf_new_top_level_document: Новый документ DMS верхнего уровня
+  label_dmsf_new_top_level_folder: Новая папка DMS верхнего уровня
+
+  label_dmsf_max_notification_receivers_info: Максимум отображаемых получателей уведомлений
+  note_dmsf_max_notification_receivers_info: Ограничивает число отображаемых получателей почтовых уведомлений.
+  label_dmsf_office_bin: Исполняемый файл Libreoffice
+  note_dmsf_office_bin: Программа для преобразования офисных документов в PDF и их предпросмотра. Чтобы отключить предпросмотр
+    офисных документов, оставьте поле пустым. После изменения может потребоваться перезапуск приложения.
+  note_dmsf_office_bin_not_available: "Программа LibreOffice '%{value}' недоступна"
+
+  label_dmsf_columns: Столбцы DMS
+  label_column_id: ID
+  label_column_title: Название
+  label_column_size: Размер
+  label_column_modified: Изменён
+  label_column_version: Версия
+  label_column_workflow: Процесс
+  label_column_author: Автор
+  label_column_description: Описание
+  label_column_comment: Комментарий
+
+  label_dmsf_global_menu_disabled: Отключить глобальное меню DMS
+  note_dmsf_global_menu_disabled: Если включено, пункта DMS не будет в верхнем меню.
+  error_dmsf_workflow_assigned: Используемый процесс согласования нельзя изменить или удалить.
+
+  label_empty_minor_version_by_default: Пустая минорная версия по умолчанию
+  text_email_doc_downloaded_subject: Документы скачаны
+  text_email_doc_downloaded: только что скачал(а) документы проекта
+  field_default_dmsf_query: Запрос DMS по умолчанию
+  field_receive_download_notification: Получать уведомления о скачивании
+
+  label_remove_original_documents_module: Удалить исходный модуль «Документы»
+
+  notice_entries_copied: Копирование выполнено
+  notice_entries_moved: Перемещение выполнено
+  label_dmsf_file_revision: Ред. документа DMS
+  error_not_supported_image_format: Формат изображения не поддерживается
+  error_not_supported_video_format: Формат видео не поддерживается
+
+  label_webdav_authentication: Аутентификация WebDAV
+  note_webdav_authentication: Базовая аутентификация считается небезопасной и блокируется некоторыми клиентами.
+    Digest-аутентификация основана на автоматически созданном дайджесте. В клиентах WebDAV пользователи также указывают
+    свои логин и пароль.
+  label_dmsf_webdav_digest_created_on: "Дайджест DMS WebDAV создан %{value} назад"
+  label_missing_dmsf_webdav_digest: Отсутствует дайджест DMS WebDAV
+  label_dmsf_webdav_digest:  Дайджест DMS WebDAV
+  text_dmsf_webdav_digest_reset: Чтобы создать новый дайджест DMS WebDAV, введите свой пароль.
+  notice_webdav_digest_reset: Ваш дайджест DMS WebDAV сброшен.
+
+  label_dmsf_commit: Сохранить
+  label_dmsf_upload_commit: Загрузить и сохранить
+
+  notice_search_in_subfolders: Поиск в подпапках не рекурсивный. Для рекурсивного поиска перейдите на верхний уровень.
+  warning_folder_unlockable: Папку нельзя разблокировать
+  redmine_dmsf: Redmine DMSF
+
+  label_maximum_xapian_filesize: Максимальный размер файла для Xapian
+  note_maximum_xapian_filesize: Ограничивает размер файла для индексации. Файлы большего размера не индексируются. Значение в МБ.
+
+  activerecord:
+    errors:
+      messages:
+        error_contains_invalid_character: содержит недопустимые символы

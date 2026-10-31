@@ -161,6 +161,15 @@ class DmsfLink < ApplicationRecord
     @parent_folder&.destroy
   end
 
+  # The name itself or, if it's already taken, the name with the first free number
+  def self.unique_name(name, taken)
+    return name unless taken.include?(name)
+
+    suffix = 2
+    suffix += 1 while taken.include?("#{name} (#{suffix})")
+    "#{name} (#{suffix})"
+  end
+
   def self.prune(timestamp)
     DmsfLink.deleted.where(updated_at: ..timestamp).destroy_all
   end

@@ -1,0 +1,32 @@
+<%# The folder tree dialog. With files it also lists documents, for choosing those instead of a folder. %>
+<% files = local_assigns[:files] %>
+<% root_files = files ? files.fetch(nil, []) : [] %>
+<h3 class="title"><%= files ? l(:title_attach_from_dms) : l(:label_dmsf_choose_folder) %></h3>
+<input type="search" id="dmsf-folder-filter"
+       placeholder="<%= files ? l(:label_dmsf_filter_documents) : l(:label_dmsf_filter_folders) %>">
+<ul class="dmsf-folder-tree">
+  <li>
+    <div class="dmsf-folder-row">
+      <span class="dmsf-folder-toggle dmsf-folder-leaf"></span>
+      <a href="#" class="dmsf-folder-pick" data-value="<%= DmsfFolder::UPLOAD_TARGET_ROOT %>"
+         data-path="<%= l(:link_documents) %>">
+        <%= sprite_icon('folder', l(:link_documents)) %>
+      </a>
+    </div>
+    <% if tree.any? || root_files.any? %>
+      <ul>
+        <%= render partial: 'dmsf/folder_picker_node', collection: tree, as: :node, locals: { files: files } %>
+        <%= render partial: 'dmsf/folder_picker_file', collection: root_files, as: :file %>
+      </ul>
+    <% end %>
+  </li>
+</ul>
+<p class="buttons">
+  <button type="button" id="dmsf-folder-select" class="button-positive" disabled
+          <% if files %>
+            data-url="<%= dmsf_links_path %>" data-project-id="<%= @project.id %>" data-container="<%= @container %>"
+          <% end %>>
+    <%= files ? l(:button_dmsf_attach) : l(:button_dmsf_select) %>
+  </button>
+  <button type="button" onclick="hideModal(this);"><%= l(:button_cancel) %></button>
+</p>

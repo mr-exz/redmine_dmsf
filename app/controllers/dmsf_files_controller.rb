@@ -222,10 +222,8 @@ class DmsfFilesController < ApplicationController
       result = @dmsf_file.delete(commit: commit)
       if result
         flash[:notice] = l(:notice_file_deleted)
-        if commit
-          container = @dmsf_file.container
-          container&.dmsf_file_removed @dmsf_file
-        else
+        @dmsf_file.container&.dmsf_file_removed @dmsf_file
+        unless commit
           begin
             recipients = DmsfMailer.deliver_files_deleted(@project, [@dmsf_file])
             if RedmineDmsf.dmsf_display_notified_recipients? && recipients.any?

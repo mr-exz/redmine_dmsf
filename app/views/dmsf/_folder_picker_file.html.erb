@@ -1,0 +1,7 @@
+<li>
+  <label class="dmsf-folder-row dmsf-attach-file">
+    <span class="dmsf-folder-toggle dmsf-folder-leaf"></span>
+    <%= check_box_tag 'dmsf_attach_file_ids[]', file.id, false, id: nil %>
+    <%= sprite_icon(icon_for_mime_type(Redmine::MimeType.of(file.name)), file.title) %>
+  </label>
+</li>
