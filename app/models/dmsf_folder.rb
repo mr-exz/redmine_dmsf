@@ -76,6 +76,8 @@ class DmsfFolder < ApplicationRecord
       .joins("LEFT JOIN #{DmsfFolderPermission.table_name} dfp ON #{DmsfFolder.table_name}.id = dfp.dmsf_folder_id")
       .where(deleted: STATUS_DELETED).where(DmsfFolder.visible_condition).distinct
   }
+  UPLOAD_TARGET_ROOT = 'root'
+
   scope :issystem, -> { where(system: true, deleted: STATUS_ACTIVE) }
 
   acts_as_customizable
@@ -252,6 +254,36 @@ class DmsfFolder < ApplicationRecord
       DmsfFolder.directory_subtree tree, folder, 2
     end
     tree
+  end
+
+  # Folders the current user can choose as a location, as nested { folder:, children: }.
+  # A folder the user can't use hides its subfolders as well.
+  def self.picker_tree(project, include_locked: false)
+    folders = where(project_id: project.id, deleted: STATUS_ACTIVE, system: [false, nil]).order(:title).to_a
+    children = folders.group_by(&:dmsf_folder_id)
+    build = lambda do |parent_id|
+      children.fetch(parent_id, []).filter_map do |folder|
+        next if (!include_locked && folder.locked_for_user?) || !DmsfFolder.permissions?(folder, allow_system: false)
+
+        { folder: folder, children: build.call(folder.id) }
+      end
+    end
+    build.call(nil)
+  end
+
+  # Values accepted as a chosen location
+  def self.upload_targets(project)
+    flatten = ->(nodes) { nodes.flat_map { |node| [node[:folder].id.to_s] + flatten.call(node[:children]) } }
+    [UPLOAD_TARGET_ROOT] + flatten.call(picker_tree(project))
+  end
+
+  # What the issue form shows for the chosen location
+  def self.upload_target_label(project, value)
+    return l(:label_dmsf_no_folder) if value.blank?
+    return l(:link_documents) if value == UPLOAD_TARGET_ROOT
+
+    folder = find_by(id: value, project_id: project.id)
+    folder ? folder.dmsf_path.map(&:title).join(' / ') : l(:label_dmsf_no_folder)
   end
 
   def folder_tree

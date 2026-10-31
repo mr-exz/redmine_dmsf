@@ -57,7 +57,7 @@ module RedmineDmsf
             end
             container.dmsf_links.each do |dmsf_link|
               dmsf_file = dmsf_link.target_file
-              links << [dmsf_file, dmsf_link, dmsf_link.created_at] if dmsf_file&.last_revision
+              links << [dmsf_file, dmsf_link, dmsf_link.created_at] if dmsf_file&.last_revision && !dmsf_file.deleted?
             end
             # Sort by 'create_at'
             links.sort_by! { |a| a[2] }
@@ -76,7 +76,7 @@ module RedmineDmsf
           html << ' style="display: none;"' if User.current.pref.dmsf_attachments_upload_choice == 'Attachments'
           html << '>'
           if label
-            html << "<label>#{l(:label_document_plural)}</label>"
+            html << "<label>#{l(:label_dmsf_upload_to_dms)}</label>"
             html << '<span class="attachments-container dmsf-uploader">'
           else
             html << %(<span class="attachments-container dmsf-uploader"

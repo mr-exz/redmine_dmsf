@@ -1,0 +1,17 @@
+<% folder_files = files ? files.fetch(node[:folder].id, []) : [] %>
+<% expandable = node[:children].any? || folder_files.any? %>
+<li class="<%= 'dmsf-folder-collapsed' if expandable %>">
+  <div class="dmsf-folder-row">
+    <span class="dmsf-folder-toggle <%= 'dmsf-folder-leaf' unless expandable %>"></span>
+    <a href="#" class="dmsf-folder-pick" data-value="<%= node[:folder].id %>"
+       data-path="<%= node[:folder].dmsf_path.map(&:title).join(' / ') %>">
+      <%= sprite_icon('folder', node[:folder].title) %>
+    </a>
+  </div>
+  <% if expandable %>
+    <ul>
+      <%= render partial: 'dmsf/folder_picker_node', collection: node[:children], as: :node, locals: { files: files } %>
+      <%= render partial: 'dmsf/folder_picker_file', collection: folder_files, as: :file %>
+    </ul>
+  <% end %>
+</li>

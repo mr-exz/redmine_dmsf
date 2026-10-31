@@ -1,0 +1,3 @@
+$('#ajax-modal').html('<%= escape_javascript(render(partial: 'dmsf/folder_picker', locals: { tree: @folder_tree })) %>');
+showModal('ajax-modal', '560px');
+dmsfInitFolderPicker();

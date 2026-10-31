@@ -63,6 +63,10 @@ class DmsfLinksController < ApplicationController
       end
     end
     @container = params[:container]
+    if @container
+      @folder_tree = DmsfFolder.picker_tree(@project, include_locked: true)
+      @attach_files = DmsfFile.attachable_in(@project)
+    end
     respond_to do |format|
       format.html
       format.js
@@ -107,7 +111,13 @@ class DmsfLinksController < ApplicationController
                                end
         @dmsf_link.target_type = DmsfFolder.model_name.to_s
       end
-      @dmsf_link.name = params[:dmsf_link][:name].scrub.strip
+      @dmsf_link.name = params[:dmsf_link][:name].to_s.scrub.strip
+      if container_file_link?
+        file = DmsfFile.find_by(id: @dmsf_link.target_id)
+        return render_403 unless file&.attachable_from_dms?
+
+        assign_container_link_attributes file
+      end
       result = @dmsf_link.save
       if result
         flash[:notice] = l(:notice_successful_create)
@@ -159,7 +169,7 @@ class DmsfLinksController < ApplicationController
         end
       end
       format.api { render_validation_errors(@dmsf_link) unless result }
-      format.js
+      format.js { flash.discard }
     end
   end
 
@@ -190,6 +200,18 @@ class DmsfLinksController < ApplicationController
   end
 
   private
+
+  def container_file_link?
+    params[:dmsf_link][:container].present? && @dmsf_link.target_type == DmsfFile.model_name.to_s
+  end
+
+  # A document attached to an issue from the dialog: the source project and the name are taken from the document.
+  # Links wait for their issue with project_id = -1, so the name of an abandoned attempt must not block a new one.
+  def assign_container_link_attributes(file)
+    taken = DmsfLink.visible.where(project_id: -1, dmsf_folder_id: nil).pluck(:name)
+    @dmsf_link.target_project_id = file.project_id
+    @dmsf_link.name = DmsfLink.unique_name(@dmsf_link.name.presence || file.title, taken)
+  end
 
   def l_params
     params.fetch(:dmsf_link, {}).permit(:project_id)

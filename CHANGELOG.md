@@ -1,6 +1,26 @@
 Changelog for Redmine DMSF
 ==========================
 
+5.3.0 *2026-10-31*
+----------
+
+    Attaching and uploading documents on the issue form
+
+* New: Folder window for choosing a location on the issue form, the upload page and the new folder page
+* New: Issue form - Upload file saves the document to a chosen folder and links it to the issue
+* New: Issue form - Attach from DMS selects one or more documents from a folder tree, replacing the Link from dialog.
+  Only documents of the issue's project can be selected
+* New: Unlink and Delete on documents attached to an issue. Unlink removes only the link, Delete moves the document
+  to the trash
+* New: Russian translation
+* Change: Uploading on the issue form requires a folder instead of using the issue's system folder. The REST API and
+  existing documents are not affected
+* Change: Delete on an issue moves a document to the trash instead of deleting it permanently
+* Bug: Attaching a document to an issue did not check whether the user is allowed to see it
+* Bug: Issues showed links to documents in the trash
+* Bug: A link not yet saved with an issue could block other links of the same name
+* Bug: A failed attempt to create a link added an empty entry to the issue form
+
 5.2.0 *2026-10-07*
 ------------------
 

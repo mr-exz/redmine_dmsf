@@ -371,6 +371,9 @@ function dmsfHandleFileDropEvent(e) {
     $(this).removeClass('fileover');
     blockEventPropagation(e);
     if ($.inArray('Files', e.dataTransfer.types) > -1) {
+        if ($('input:file.file_selector').prop('disabled')) {
+            return;
+        }
         dmsfUploadAndAttachFiles(e.dataTransfer.files, $('input:file.file_selector'));
     }
 }
@@ -405,3 +408,126 @@ function dmsfSetupFileDrop() {
 }
 
 $(document).ready(dmsfSetupFileDrop);
+
+/* Expand/collapse and filtering shared by the folder and document trees */
+function dmsfInitTree(tree) {
+    tree.find('.dmsf-folder-toggle').not('.dmsf-folder-leaf').on('click', function() {
+        $(this).closest('li').toggleClass('dmsf-folder-collapsed');
+    });
+    $('#dmsf-folder-filter').on('input', function() {
+        let term = $(this).val().trim().toLowerCase();
+        tree.find('li').each(function() {
+            let item = $(this);
+            item.toggle(term === '' || item.text().toLowerCase().indexOf(term) !== -1);
+            item.toggleClass('dmsf-folder-filtering', term !== '');
+        });
+    }).trigger('focus');
+}
+
+/* The tree dialog listing documents: every ticked one becomes a link on the issue form */
+function dmsfInitAttachPicker() {
+    let tree = $('.dmsf-folder-tree');
+    let submit = $('#dmsf-folder-select');
+    dmsfInitTree(tree);
+    tree.find('.dmsf-folder-pick').on('click', function(event) {
+        event.preventDefault();
+        $(this).closest('li').toggleClass('dmsf-folder-collapsed');
+    });
+    tree.on('change', 'input[type=checkbox]', function() {
+        $(this).closest('.dmsf-attach-file').toggleClass('dmsf-folder-picked', this.checked);
+        submit.prop('disabled', tree.find('input[type=checkbox]:checked').length === 0);
+    });
+    submit.on('click', function() {
+        let button = this;
+        submit.prop('disabled', true);
+        let ids = tree.find('input[type=checkbox]:checked').map(function() { return this.value; }).get();
+        // One at a time, as the name of each new link depends on the previous ones
+        let chain = $.Deferred().resolve();
+        ids.forEach(function(id) {
+            chain = chain.then(function() {
+                return $.ajax({
+                    url: submit.data('url'),
+                    type: 'POST',
+                    dataType: 'script',
+                    headers: { 'X-CSRF-Token': $('meta[name=csrf-token]').attr('content') },
+                    data: { dmsf_link: { project_id: submit.data('project-id'), type: 'link_from',
+                                         container: submit.data('container'), target_file_id: id } }
+                });
+            });
+        });
+        chain.always(function() { hideModal(button); })
+             .fail(function(xhr) { alert(xhr.statusText); });
+    });
+}
+
+/* Folder picker: the chooser that opened the dialog receives the result */
+let dmsfFolderChooser = null;
+let dmsfChooseFileAfterFolder = false;
+
+// In the capture phase, because the handler of remote links stops the event from reaching other listeners
+document.addEventListener('click', function(event) {
+    let opener = event.target.closest('.dmsf-folder-chooser-open');
+    if (opener) {
+        dmsfFolderChooser = $(opener).closest('.dmsf-folder-chooser');
+        dmsfChooseFileAfterFolder = false;
+    }
+}, true);
+
+// Without a folder the upload button asks for one first, and then for the file
+$(document).on('click', '.dmsf_add_attachment', function() {
+    if (!$(this).find('input.file_selector').prop('disabled')) {
+        return;
+    }
+    let opener = $(this).closest('.dmsf-uploader').find('.dmsf-folder-chooser-open')[0];
+    if (opener) {
+        opener.click();
+        dmsfChooseFileAfterFolder = true;
+    }
+});
+
+function dmsfInitFolderPicker() {
+    let tree = $('.dmsf-folder-tree');
+    let opener = dmsfFolderChooser.find('.dmsf-folder-chooser-open');
+    let select = $('#dmsf-folder-select');
+    let picked = null;
+    dmsfInitTree(tree);
+    let pick = function(link) {
+        tree.find('.dmsf-folder-picked').removeClass('dmsf-folder-picked');
+        link.closest('.dmsf-folder-row').addClass('dmsf-folder-picked');
+        picked = link;
+        select.prop('disabled', false);
+    };
+    tree.find('.dmsf-folder-pick').on('click', function(event) {
+        event.preventDefault();
+        pick($(this));
+    });
+    select.on('click', function() {
+        let value = String(picked.data('value'));
+        let navigate = opener.data('navigate');
+        if (navigate) {
+            let root = value === 'root';
+            window.location = root ? opener.data('navigate-root') : navigate.replace('__FOLDER__', value);
+            return;
+        }
+        dmsfFolderChooser.find('.dmsf-folder-chooser-value').val(value);
+        dmsfFolderChooser.find('.dmsf-folder-chooser-path').text(picked.data('path'));
+        let uploader = dmsfFolderChooser.closest('.dmsf-uploader');
+        uploader.find('input.file_selector').prop('disabled', false);
+        uploader.find('.dmsf-folder-required').remove();
+        if (dmsfChooseFileAfterFolder) {
+            dmsfChooseFileAfterFolder = false;
+            uploader.find('input.file_selector')[0].click();
+        }
+        opener.data('selected', value);
+        hideModal(this);
+    });
+    let selected = String(opener.data('selected'));
+    let current = tree.find('.dmsf-folder-pick').filter(function() {
+        return String($(this).data('value')) === (selected === '' && opener.data('navigate') ? 'root' : selected);
+    }).first();
+    if (current.length) {
+        pick(current);
+        current.parents('li').removeClass('dmsf-folder-collapsed');
+        current[0].scrollIntoView({ block: 'nearest' });
+    }
+}

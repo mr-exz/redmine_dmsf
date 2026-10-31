@@ -232,6 +232,12 @@ class DmsfController < ApplicationController
     redirect_back_or_default dmsf_folder_path(id: @project, folder_id: @folder)
   end
 
+  # The dialog for choosing a folder
+  def folder_picker
+    @folder_tree = DmsfFolder.picker_tree(@project)
+    respond_to(&:js)
+  end
+
   def new
     @folder = DmsfFolder.new
     @pathfolder = @parent

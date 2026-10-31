@@ -24,6 +24,12 @@
 
 <%= render partial: 'dmsf/description' %>
 
+<%= render partial: 'dmsf/folder_chooser',
+           locals: { label: l(:label_dmsf_save_to_folder), project: @project, value: @folder&.id,
+                     current: @folder ? @folder.dmsf_path.map(&:title).join(' / ') : l(:link_documents),
+                     navigate: multi_dmsf_upload_path(id: @project, folder_id: '__FOLDER__'),
+                     navigate_root: multi_dmsf_upload_path(id: @project) } %>
+
 <%= form_tag({ controller: 'dmsf_upload', action: 'upload_files', id: @project, folder_id: @folder },
              { id: 'uploadform', multipart: true }) do %>
   <span class="dmsf-uploader">

@@ -17,9 +17,10 @@
   # <https://www.gnu.org/licenses/>.
 %>
 
+<% if @dmsf_link.persisted? %>
 var linksSpan = $("#dmsf_links_attachments_fields");
 var linkId = "<%= @dmsf_link.id %>";
-var linkName = "<%= @dmsf_link.name %>";
+var linkName = <%= raw @dmsf_link.name.to_json %>;
 var title = "<%= l(:label_dmsf_wokflow_action_assign) %>";
 var project = "<%= @project.identifier %>"
 var awf = false;
@@ -33,3 +34,6 @@ var awf = false;
 <% end %>
 
 dmsfAddLink(linksSpan, linkId, linkName, title, project, awf);
+<% else %>
+alert(<%= raw @dmsf_link.errors.full_messages.to_sentence.to_json %>);
+<% end %>

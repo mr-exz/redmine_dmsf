@@ -1,0 +1,16 @@
+<%# Shows the chosen folder and opens the folder picker. Either stores the choice in a hidden input (input_name), or
+    reloads the page for the chosen folder (navigate, with navigate_root for the top level). %>
+<span class="dmsf-folder-chooser">
+  <%= label %>:
+  <span class="dmsf-folder-chooser-path"><%= current %></span>
+  <%= hidden_field_tag(input_name, value, id: nil, class: 'dmsf-folder-chooser-value') if local_assigns[:input_name] %>
+  <% if User.current.allowed_to?(:view_dmsf_folders, project) %>
+    <%= link_to l(:button_dmsf_change),
+                dmsf_folder_picker_path(id: project),
+                remote: true,
+                class: 'dmsf-folder-chooser-open',
+                data: { selected: value.to_s,
+                        navigate: local_assigns[:navigate],
+                        navigate_root: local_assigns[:navigate_root] } %>
+  <% end %>
+</span>

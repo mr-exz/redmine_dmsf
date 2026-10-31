@@ -152,10 +152,12 @@ module RedmineDmsf
           # Attach DMS documents
           uploaded_files = params[:dmsf_attachments]
           details = params[:committed_files]
-          if uploaded_files
-            system_folder = issue.system_folder(create: true)
+          target = upload_target(issue, params[:dmsf_target_folder_id]) if uploaded_files
+          context[:controller].flash[:warning] = l(:warning_dmsf_target_folder_invalid) if uploaded_files && !target
+          if target
+            target_folder = target.first
             uploaded_files.each do |key, uploaded_file|
-              upload = DmsfUpload.create_from_uploaded_attachment(issue.project, system_folder, uploaded_file)
+              upload = DmsfUpload.create_from_uploaded_attachment(issue.project, target_folder, uploaded_file)
               next unless upload
 
               uploaded_file[:disk_filename] = upload.disk_filename
@@ -178,9 +180,11 @@ module RedmineDmsf
                 uploaded_file[:workflow_id] = params[:dmsf_attachments_wfs][key].to_i
               end
               uploaded_file[:custom_field_values] = details[key][:custom_field_values] if details
+              next_version_of_existing_file(issue.project, target_folder, uploaded_file)
             end
-            DmsfUploadHelper.commit_files_internal uploaded_files, issue.project, system_folder, context[:controller],
-                                                   issue, new_object: @new_object
+            files, = DmsfUploadHelper.commit_files_internal uploaded_files, issue.project, target_folder,
+                                                            context[:controller], issue, new_object: @new_object
+            issue.link_dmsf_files(files)
           end
           # Attach DMS links
           issue.saved_dmsf_links.each do |l|
@@ -211,6 +215,25 @@ module RedmineDmsf
               Rails.logger.error l(:error_workflow_assign)
             end
           end
+        end
+
+        # The chosen folder wrapped in an array, as nil stands for the top level of the DMS. Returns nil if the value
+        # is not a location offered to the user.
+        def upload_target(issue, value)
+          return unless value.present? && DmsfFolder.upload_targets(issue.project).include?(value.to_s)
+
+          [value == DmsfFolder::UPLOAD_TARGET_ROOT ? nil : DmsfFolder.find(value)]
+        end
+
+        # A file of the same name in the chosen folder gets a new revision, which continues from that file's version.
+        def next_version_of_existing_file(project, folder, uploaded_file)
+          revision = DmsfFile.visible.find_file_by_name(project, folder, uploaded_file[:name])&.last_revision
+          return unless revision
+
+          uploaded_file[:version_major] = DmsfUploadHelper.gui_version(revision.major_version)
+          uploaded_file[:version_minor] =
+            DmsfUploadHelper.gui_version(DmsfUploadHelper.increase_version(revision.minor_version))
+          uploaded_file[:version_patch] = nil
         end
       end
     end

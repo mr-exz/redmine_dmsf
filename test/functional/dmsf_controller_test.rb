@@ -734,4 +734,28 @@ class DmsfControllerTest < RedmineDmsf::Test::TestCase
          params: { ids: ["folder-link-#{@link1.id}", "file-link-#{@link4.id}"], download_entries: true }
     assert_response :success
   end
+
+  def test_folder_picker_lists_folders_without_system_ones
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    system_folder = Issue.find(1).system_folder(create: true)
+    get dmsf_folder_picker_path(id: @project1), xhr: true
+    assert_response :success
+    assert_includes response.body, 'folder1'
+    assert_not_includes response.body, system_folder.title
+  end
+
+  def test_folder_picker_forbidden_without_permission
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    @role_manager.remove_permission! :view_dmsf_folders
+    get dmsf_folder_picker_path(id: @project1), xhr: true
+    assert_response :forbidden
+  end
+
+  def test_folder_chooser_on_new_folder_and_upload_pages
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    get new_dmsf_path(id: @project1)
+    assert_select '.dmsf-folder-chooser a[data-navigate]'
+    get multi_dmsf_upload_path(id: @project1, folder_id: 1)
+    assert_select '.dmsf-folder-chooser a[data-navigate]'
+  end
 end

@@ -126,6 +126,28 @@ module RedmineDmsf
         folder
       end
 
+      # Shows documents stored elsewhere in the DMS on this issue
+      def link_dmsf_files(files)
+        return if files.empty?
+
+        folder = system_folder(create: true)
+        return unless folder
+
+        links = folder.dmsf_links.visible.to_a
+        files.each do |file|
+          next if links.any? { |l| l.target_type == DmsfFile.model_name.to_s && l.target_id == file.id }
+
+          link = DmsfLink.new(project_id: folder.project_id, dmsf_folder_id: folder.id, target_id: file.id,
+                              target_type: DmsfFile.model_name.to_s, target_project_id: file.project_id,
+                              name: DmsfLink.unique_name(file.title, links.map(&:name)), user: User.current)
+          if link.save
+            links << link
+          else
+            Rails.logger.error link.errors.full_messages.to_sentence
+          end
+        end
+      end
+
       def dmsf_files
         system_folder&.dmsf_files&.visible || []
       end
