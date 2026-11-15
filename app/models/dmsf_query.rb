@@ -440,7 +440,12 @@ class DmsfQuery < Query
                     .joins("LEFT JOIN dmsf_locks ON dmsf_folders.id = dmsf_locks.entity_id AND
                             dmsf_locks.entity_type = 1 AND (dmsf_locks.expires_at IS NULL OR
                             dmsf_locks.expires_at > #{now})")
-    scope = deleted ? scope.deleted : scope.visible
+    # Hide links whose target folder has been moved into the trash bin (a NULL target is the project's root)
+    scope = if deleted
+              scope.deleted
+            else
+              scope.visible.where('dmsf_folders.id IS NULL OR dmsf_folders.deleted = ?', DmsfFolder::STATUS_ACTIVE)
+            end
     if dmsf_folder_id
       scope.where dmsf_links: { target_type: 'DmsfFolder', dmsf_folder_id: dmsf_folder_id }
     elsif project.nil? && filters_on?
@@ -535,7 +540,8 @@ class DmsfQuery < Query
                     .joins("LEFT JOIN dmsf_locks ON dmsf_files.id = dmsf_locks.entity_id AND dmsf_locks.entity_type = 0
                             AND (dmsf_locks.expires_at IS NULL OR dmsf_locks.expires_at > #{now})")
                     .where(sub_query)
-    scope = deleted ? scope.deleted : scope.visible
+    # Hide links whose target document has been moved into the trash bin
+    scope = deleted ? scope.deleted : scope.visible.where(dmsf_files: { deleted: DmsfFile::STATUS_ACTIVE })
     if dmsf_folder_id
       scope.where dmsf_links: { target_type: 'DmsfFile', dmsf_folder_id: dmsf_folder_id }
     elsif project.nil? && filters_on?

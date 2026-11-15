@@ -71,4 +71,17 @@ class DmsfQueryTest < RedmineDmsf::Test::UnitTest
   def test_groupable_columns
     assert_not @query401.groupable_columns.any?
   end
+
+  def test_links_to_trashed_targets_are_hidden
+    query = DmsfQuery.new(name: '_', project: @project1)
+    nodes = -> { query.dmsf_nodes.map { |n| "#{n.type}-#{n.id}" } }
+    assert_includes nodes.call, 'file-link-4'
+    assert_includes nodes.call, 'folder-link-1'
+
+    DmsfFile.find(4).update_column :deleted, DmsfFile::STATUS_DELETED
+    DmsfFolder.find(1).update_column :deleted, DmsfFolder::STATUS_DELETED
+
+    assert_not_includes nodes.call, 'file-link-4'
+    assert_not_includes nodes.call, 'folder-link-1'
+  end
 end

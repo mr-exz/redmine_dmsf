@@ -1,6 +1,11 @@
 Changelog for Redmine DMSF
 ==========================
 
+5.3.1 *2026-11-15*
+------------------
+
+* Bug: Links to documents and folders in the trash were still listed in DMS folders and led to a 404 page
+
 5.3.0 *2026-10-31*
 ----------
 
