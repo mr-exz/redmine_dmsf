@@ -90,6 +90,50 @@ class IssuesControllerTest < RedmineDmsf::Test::TestCase
     assert_equal(1, @issue1.dmsf_links.count { |l| l.target_id == file.id })
   end
 
+  def upload_with_links(links)
+    attachment = Attachment.create!(file: StringIO.new('content'), filename: 'policy.pdf',
+                                    content_type: 'application/pdf', author: @jsmith)
+    with_settings plugin_redmine_dmsf: Setting.plugin_redmine_dmsf.merge('dmsf_act_as_attachable' => '1') do
+      patch "/issues/#{@issue1.id}",
+            params: { issue: { notes: 'upload' }, dmsf_target_folder_id: '1',
+                      dmsf_attachments: { '1' => { filename: 'policy.pdf', token: attachment.token } },
+                      dmsf_propagate_links: { '1' => links } }
+    end
+    assert_redirected_to action: 'show', id: @issue1.id
+    DmsfFile.visible.find_file_by_name(@project1, DmsfFolder.find(1), 'policy.pdf')
+  end
+
+  def test_upload_propagates_links_with_custom_names
+    file = nil
+    assert_difference 'DmsfLink.visible.where(target_type: "DmsfFile").count', 3 do # 2 folders + the issue
+      file = upload_with_links({ '1' => { folder_id: '6', name: 'Policy - Sales' },
+                                 '2' => { folder_id: DmsfFolder::UPLOAD_TARGET_ROOT, name: '' } })
+    end
+    assert file
+    sales = DmsfLink.visible.find_by(dmsf_folder_id: 6, target_id: file.id, target_type: 'DmsfFile')
+    assert_equal 'Policy - Sales', sales&.name
+    assert_equal @project1.id, sales.project_id
+    root = DmsfLink.visible.find_by(project_id: @project1.id, dmsf_folder_id: nil, target_id: file.id,
+                                    target_type: 'DmsfFile')
+    assert_equal file.title, root&.name # A blank name falls back to the title
+    assert_nil flash[:warning]
+  end
+
+  def test_propagated_links_ignore_folders_of_other_projects
+    file = upload_with_links({ '1' => { folder_id: '3', name: 'Elsewhere' } })
+    assert file
+    assert_not DmsfLink.visible.exists?(name: 'Elsewhere')
+  end
+
+  def test_propagated_link_with_a_taken_name_is_reported
+    taken = DmsfLink.create!(project_id: @project1.id, dmsf_folder_id: 6, target_project_id: @project1.id,
+                             target_id: 1, target_type: 'DmsfFile', name: 'Taken', user: @jsmith)
+    file = upload_with_links({ '1' => { folder_id: '6', name: taken.name } })
+    assert file
+    assert_not DmsfLink.visible.exists?(dmsf_folder_id: 6, target_id: file.id, target_type: 'DmsfFile')
+    assert_match 'Taken', flash[:warning]
+  end
+
   def test_upload_to_a_folder_of_another_project_is_not_stored
     assert_no_difference 'DmsfFile.count' do
       upload_to_issue DmsfFolder.find(3).id.to_s
@@ -127,6 +171,13 @@ class IssuesControllerTest < RedmineDmsf::Test::TestCase
     end
     assert_select '.dmsf-uploader input.file_selector[disabled]'
     assert_select '.dmsf-folder-required'
+  end
+
+  def test_edit_form_offers_links_into_other_folders
+    with_settings plugin_redmine_dmsf: Setting.plugin_redmine_dmsf.merge('dmsf_act_as_attachable' => '1') do
+      get "/issues/#{@issue1.id}/edit"
+    end
+    assert_select ".dmsf-uploader input.file_selector[data-propagate-url='#{dmsf_folder_picker_path(id: @project1)}']"
   end
 
   def test_delete_sends_a_linked_file_to_the_trash_and_off_the_issue

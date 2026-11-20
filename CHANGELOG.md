@@ -1,6 +1,18 @@
 Changelog for Redmine DMSF
 ==========================
 
+5.4.0 *2026-11-21*
+------------------
+
+    Linking an uploaded document into other folders
+
+* New: Issue form - Uploaded documents can be linked into other folders of the project, each link under its own
+  name, e.g. one document shared by the folders of several departments
+* Change: Attach from DMS loads the documents of a folder when it is opened and searches documents on the server,
+  so that it stays fast in projects with many documents
+* Bug: PDF documents were downloaded instead of displayed in Chrome and Firefox if the browser had uploaded them with
+  a generic content type such as application/octet-stream
+
 5.3.1 *2026-11-15*
 ------------------
 

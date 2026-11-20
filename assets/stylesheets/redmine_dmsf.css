@@ -368,6 +368,17 @@ div.dmsf-scroll {
     margin: 0 4px 0 0;
 }
 
+.dmsf-attach-path {
+    margin-left: 8px;
+    color: #888;
+    font-size: 0.9em;
+}
+
+.dmsf-attach-note, .dmsf-attach-more {
+    padding: 2px 2px 2px 18px;
+    color: #888;
+}
+
 /* Upload and attach buttons of the upload form */
 .dmsf-upload-actions {
     display: flex;
@@ -486,4 +497,25 @@ div.dmsf-scroll {
 
 .dmsf-folder-collapsed:not(.dmsf-folder-filtering) > ul {
     display: none;
+}
+
+/* Links of an uploaded file into other folders */
+.dmsf-propagate-links {
+    margin: 2px 0 4px 20px;
+}
+
+.dmsf-propagate-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0;
+}
+
+.dmsf-propagate-path {
+    color: #555;
+}
+
+.dmsf-propagate-link input.dmsf-propagate-name {
+    width: 280px;
+    max-width: 50%;
 }

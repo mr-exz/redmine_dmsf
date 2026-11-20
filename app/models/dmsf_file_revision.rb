@@ -126,9 +126,15 @@ class DmsfFileRevision < ApplicationRecord
     "MD5: #{Base64.decode64(file&.blob&.checksum).each_byte.map { |b| format('%02x', b.to_i) }.join}"
   end
 
+  # Types browsers send when they don't know the file, e.g. a PDF on a system without a PDF reader
+  GENERIC_CONTENT_TYPES = %w[application/octet-stream binary/octet-stream application/unknown].freeze
+  # Non-standard types of PDF documents; browsers display a PDF inline only if it is sent as application/pdf
+  PDF_CONTENT_TYPES = %w[application/x-pdf application/acrobat applications/vnd.pdf text/pdf text/x-pdf].freeze
+
   def content_type
-    res = file.blob&.content_type
-    res = Redmine::MimeType.of(file.blob&.filename) if res.blank?
+    res = file.blob&.content_type.to_s.downcase
+    res = Redmine::MimeType.of(file.blob&.filename.to_s).to_s if res.blank? || GENERIC_CONTENT_TYPES.include?(res)
+    res = 'application/pdf' if PDF_CONTENT_TYPES.include?(res)
     res = 'application/octet-stream' if res.blank?
     res
   end

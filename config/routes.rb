@@ -150,6 +150,9 @@ if Redmine::Plugin.installed? 'redmine_dmsf'
 
     # Links
     resources :dmsf_links do
+      collection do
+        get 'attach_files'
+      end
       member do
         get 'restore'
         get 'autocomplete_for_project'

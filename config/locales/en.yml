@@ -294,7 +294,7 @@ en:
   label_link_from: Link from
   title_attach_from_dms: Attach from DMS
   label_dmsf_upload_to_dms: Upload to DMS
-  label_dmsf_filter_documents: Type to filter folders and documents
+  label_dmsf_filter_documents: Type to filter folders, 3 or more characters search documents
   button_dmsf_attach: Attach
   label_dmsf_upload_file: Upload file
   button_dmsf_unlink: Unlink
@@ -309,6 +309,11 @@ en:
   warning_dmsf_target_folder_invalid: No available folder was selected, so the files were not saved to DMS.
   text_dmsf_unlink_confirmation: Remove this document from the issue? The document itself stays in DMS.
   text_dmsf_delete_to_trash_confirmation: Move this document to the DMS trash? It will disappear from every issue that uses it.
+  title_dmsf_link_to_folders: Link into other folders under its own name
+  label_dmsf_link_name: Link name
+  warning_dmsf_links_not_created: "Some links were not created: %{errors}"
+  label_dmsf_show_more: "Show more (%{count})"
+  text_dmsf_refine_search: "Only the first %{count} documents found are shown. Refine the search."
   label_link_to: Link to
   label_notifications_on: Turn on notifications
   label_notifications_off: Turn off notifications

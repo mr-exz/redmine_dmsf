@@ -182,6 +182,23 @@ function dmsfAddFile(inputEl, file, eagerUpload) {
                 }).append(assignmentIcon);
                 fileSpan.append(iconWf);
             }
+            // Links of the file into other folders
+            let propagateUrl = $(inputEl).data('propagate-url');
+            let propagateList = null;
+            if (propagateUrl) {
+                let propagateChooser = $('<span>', {'class': 'dmsf-propagate-chooser'})
+                    .attr({'data-attachment-id': attachmentId, 'data-file-name': file.name,
+                           'data-name-title': $(inputEl).data('propagate-name-title')});
+                let propagateOpener = $('<a>').attr({
+                    href: propagateUrl,
+                    class: 'dmsf-folder-chooser-open modify-upload icon-only icon-link',
+                    'data-remote': 'true',
+                    title: $(inputEl).data('propagate-title')
+                }).append(attachmentsIcons.find('svg.svg-dmsf-link').clone());
+                propagateChooser.append(propagateOpener);
+                fileSpan.append(propagateChooser);
+                propagateList = $('<div>', {id: 'dmsf_propagate_links_' + attachmentId, 'class': 'dmsf-propagate-links'});
+            }
             // Details
             let detailsDiv = $('<div>').attr({id: 'dmsf_attachments_details_' + attachmentId});
             let detailsArrow = $('<a>');
@@ -224,6 +241,9 @@ function dmsfAddFile(inputEl, file, eagerUpload) {
             detailsDiv.append(detailsForm);
             detailsDiv.hide();
             fileSpan.append(detailsArrow)
+            if (propagateList) {
+                fileSpan.append(propagateList);
+            }
             fileSpan.append(detailsDiv);
             attachments.append(fileSpan);
         } else {
@@ -424,23 +444,108 @@ function dmsfInitTree(tree) {
     }).trigger('focus');
 }
 
-/* The tree dialog listing documents: every ticked one becomes a link on the issue form */
+/* The tree dialog listing documents: every ticked one becomes a link on the issue form.
+   Documents of a folder are loaded when it is opened; three or more typed characters search the whole project. */
 function dmsfInitAttachPicker() {
-    let tree = $('.dmsf-folder-tree');
+    let results = $('#dmsf-attach-results');
+    let tree = $('.dmsf-folder-tree').not(results);
+    let both = tree.add(results);
+    let filter = $('#dmsf-folder-filter');
     let submit = $('#dmsf-folder-select');
-    dmsfInitTree(tree);
-    tree.find('.dmsf-folder-pick').on('click', function(event) {
+    let url = submit.data('files-url');
+    let minLength = parseInt(submit.data('min-length'), 10) || 3;
+    let loading = $('<li>', {'class': 'dmsf-attach-note'}).text(submit.data('loading'));
+    // Ticked documents, kept while folders are browsed and searched
+    let selected = new Set();
+    let markSelected = function(container) {
+        container.find('input[type=checkbox]').each(function() {
+            this.checked = selected.has(this.value);
+            $(this).closest('.dmsf-attach-file').toggleClass('dmsf-folder-picked', this.checked);
+        });
+    };
+    // Replaces the placeholder with the documents the server returns
+    let load = function(placeholder, params) {
+        let indicator = loading.clone();
+        placeholder.replaceWith(indicator);
+        return $.get(url, params).done(function(html) {
+            let items = $('<ul>').html(html);
+            markSelected(items);
+            indicator.replaceWith(items.children());
+        }).fail(function(xhr) {
+            indicator.text(xhr.statusText);
+        });
+    };
+    let open = function(li) {
+        li.toggleClass('dmsf-folder-collapsed');
+        if (li.hasClass('dmsf-folder-collapsed')) {
+            return;
+        }
+        let placeholder = li.children('ul').children('.dmsf-attach-files[data-pending]');
+        if (placeholder.length) {
+            load(placeholder, {folder_id: placeholder.data('folder-id')});
+        }
+    };
+    tree.on('click', '.dmsf-folder-toggle:not(.dmsf-folder-leaf)', function() {
+        open($(this).closest('li'));
+    });
+    tree.on('click', '.dmsf-folder-pick', function(event) {
         event.preventDefault();
-        $(this).closest('li').toggleClass('dmsf-folder-collapsed');
+        open($(this).closest('li'));
     });
-    tree.on('change', 'input[type=checkbox]', function() {
-        $(this).closest('.dmsf-attach-file').toggleClass('dmsf-folder-picked', this.checked);
-        submit.prop('disabled', tree.find('input[type=checkbox]:checked').length === 0);
+    tree.on('click', '.dmsf-attach-more a', function(event) {
+        event.preventDefault();
+        load($(this).closest('li'), {folder_id: $(this).data('folder-id'), offset: $(this).data('offset')});
     });
+    both.on('change', 'input[type=checkbox]', function() {
+        if (this.checked) {
+            selected.add(this.value);
+        } else {
+            selected.delete(this.value);
+        }
+        // The same document may be shown both in the tree and among the search results
+        markSelected(both);
+        submit.prop('disabled', selected.size === 0);
+    });
+    // Short terms filter what is shown in the tree, longer ones search on the server
+    let timer = null;
+    let request = null;
+    filter.on('input', function() {
+        let term = $(this).val().trim();
+        clearTimeout(timer);
+        if (request) {
+            request.abort();
+            request = null;
+        }
+        if (term.length < minLength) {
+            results.hide().empty();
+            tree.show();
+            let lower = term.toLowerCase();
+            tree.find('li').each(function() {
+                let item = $(this);
+                item.toggle(lower === '' || item.text().toLowerCase().indexOf(lower) !== -1);
+                item.toggleClass('dmsf-folder-filtering', lower !== '');
+            });
+            return;
+        }
+        timer = setTimeout(function() {
+            tree.hide();
+            results.show().empty().append(loading.clone());
+            request = $.get(url, {q: term}).done(function(html) {
+                results.html(html);
+                markSelected(results);
+            }).fail(function(xhr, status) {
+                if (status !== 'abort') {
+                    results.empty().append(loading.clone().text(xhr.statusText));
+                }
+            });
+        }, 300);
+    }).trigger('focus');
+    // Documents at the top level
+    load(tree.find('.dmsf-attach-files[data-folder-id=""]').first(), {});
     submit.on('click', function() {
         let button = this;
         submit.prop('disabled', true);
-        let ids = tree.find('input[type=checkbox]:checked').map(function() { return this.value; }).get();
+        let ids = Array.from(selected);
         // One at a time, as the name of each new link depends on the previous ones
         let chain = $.Deferred().resolve();
         ids.forEach(function(id) {
@@ -468,7 +573,7 @@ let dmsfChooseFileAfterFolder = false;
 document.addEventListener('click', function(event) {
     let opener = event.target.closest('.dmsf-folder-chooser-open');
     if (opener) {
-        dmsfFolderChooser = $(opener).closest('.dmsf-folder-chooser');
+        dmsfFolderChooser = $(opener).closest('.dmsf-folder-chooser, .dmsf-propagate-chooser');
         dmsfChooseFileAfterFolder = false;
     }
 }, true);
@@ -503,6 +608,11 @@ function dmsfInitFolderPicker() {
     });
     select.on('click', function() {
         let value = String(picked.data('value'));
+        if (dmsfFolderChooser.hasClass('dmsf-propagate-chooser')) {
+            dmsfAddPropagateLink(dmsfFolderChooser, value, picked.data('path'));
+            hideModal(this);
+            return;
+        }
         let navigate = opener.data('navigate');
         if (navigate) {
             let root = value === 'root';
@@ -531,3 +641,35 @@ function dmsfInitFolderPicker() {
         current[0].scrollIntoView({ block: 'nearest' });
     }
 }
+
+/* A link of an uploaded file into another folder, under a name of its own */
+function dmsfAddPropagateLink(chooser, folderId, path) {
+    let attachmentId = chooser.data('attachment-id');
+    let list = $('#dmsf_propagate_links_' + attachmentId);
+    let taken = list.find('input.dmsf-propagate-folder').filter(function() { return this.value === folderId; });
+    if (taken.length) {
+        taken.closest('.dmsf-propagate-link').find('input.dmsf-propagate-name').trigger('focus');
+        return;
+    }
+    let n = dmsfAddPropagateLink.nextId++;
+    let prefix = 'dmsf_propagate_links[' + attachmentId + '][' + n + ']';
+    let title = $('#committed_files_' + attachmentId + '_title').val() || filenameToTitle(chooser.data('file-name'));
+    let icons = chooser.closest('.dmsf-uploader').find('.dmsf-attachments-icons');
+    let row = $('<div>', {'class': 'dmsf-propagate-link'});
+    row.append(icons.find('svg.svg-dmsf-link').clone());
+    row.append($('<span>', {'class': 'dmsf-propagate-path'}).text(path));
+    row.append($('<input>', {type: 'hidden', 'class': 'dmsf-propagate-folder', name: prefix + '[folder_id]'})
+        .val(folderId));
+    row.append($('<input>', {type: 'text', 'class': 'dmsf-propagate-name', name: prefix + '[name]',
+        title: chooser.data('name-title'), placeholder: chooser.data('name-title')}).val(title));
+    row.append($('<a>').attr({href: '#', 'class': 'remove-upload icon-only icon-del', title: 'Delete'})
+        .append(icons.find('svg.svg-del').clone())
+        .on('click', function() {
+            row.remove();
+            return false;
+        }));
+    list.append(row);
+    row.find('input.dmsf-propagate-name').trigger('focus').trigger('select');
+}
+
+dmsfAddPropagateLink.nextId = 1;

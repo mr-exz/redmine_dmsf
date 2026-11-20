@@ -271,6 +271,18 @@ class DmsfFolder < ApplicationRecord
     build.call(nil)
   end
 
+  # Paths of the folders of picker_tree by their id, built from the tree instead of a query per folder
+  def self.picker_paths(project, include_locked: false)
+    walk = lambda do |nodes, prefix|
+      nodes.each_with_object({}) do |node, paths|
+        path = prefix ? "#{prefix} / #{node[:folder].title}" : node[:folder].title
+        paths[node[:folder].id] = path
+        paths.merge! walk.call(node[:children], path)
+      end
+    end
+    walk.call picker_tree(project, include_locked: include_locked), nil
+  end
+
   # Values accepted as a chosen location
   def self.upload_targets(project)
     flatten = ->(nodes) { nodes.flat_map { |node| [node[:folder].id.to_s] + flatten.call(node[:children]) } }

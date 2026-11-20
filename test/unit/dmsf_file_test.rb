@@ -232,6 +232,50 @@ class DmsfFileTest < RedmineDmsf::Test::UnitTest
     assert @file1.markdown?
   end
 
+  def test_attachable_in_folder_pages_by_title
+    User.current = @jsmith
+    all, total = DmsfFile.attachable_in_folder(@project1, nil)
+    assert_operator total, :>=, 2
+    assert_equal all.map { |e| e.title.downcase }, all.map { |e| e.title.downcase }.sort
+    assert_not_includes all.map(&:id), 3 # Deleted
+    first, = DmsfFile.attachable_in_folder(@project1, nil, limit: 1)
+    second, = DmsfFile.attachable_in_folder(@project1, nil, offset: 1, limit: 1)
+    assert_equal all.first(2).map(&:id), (first + second).map(&:id)
+    beyond, = DmsfFile.attachable_in_folder(@project1, nil, offset: total + 5)
+    assert_empty beyond
+  end
+
+  def test_attachable_search
+    User.current = @jsmith
+    paths = DmsfFolder.picker_paths(@project1, include_locked: true)
+    file = DmsfFile.find 5
+    found, more = DmsfFile.attachable_search(@project1, paths, file.title.upcase)
+    entry = found.detect { |e| e.id == file.id }
+    assert entry
+    assert_equal paths[file.dmsf_folder_id], entry.path
+    assert_not more
+    found, = DmsfFile.attachable_search(@project1, paths.except(file.dmsf_folder_id), file.title)
+    assert_not_includes found.map(&:id), file.id # A folder not offered to the user
+    assert_equal [[], false], DmsfFile.attachable_search(@project1, paths, 'ab')
+  end
+
+  def test_attachable_search_limit
+    User.current = @jsmith
+    paths = DmsfFolder.picker_paths(@project1, include_locked: true)
+    all, = DmsfFile.attachable_search(@project1, paths, 'test')
+    assert_operator all.size, :>=, 2
+    found, more = DmsfFile.attachable_search(@project1, paths, 'test', limit: 1)
+    assert_equal 1, found.size
+    assert more
+  end
+
+  def test_pdf_with_a_generic_type_is_displayed_inline
+    @file1.last_revision.file.blob.filename = 'test.pdf'
+    @file1.last_revision.file.blob.content_type = 'application/octet-stream'
+    assert @file1.pdf?
+    assert_equal 'inline', @file1.disposition
+  end
+
   def test_textile
     assert_not @file1.textile?
     @file1.last_revision.file.blob.content_type = 'text/textile'

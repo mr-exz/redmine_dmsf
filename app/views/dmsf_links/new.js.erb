@@ -1,5 +1,5 @@
 <% if @container %>
-  $('#ajax-modal').html('<%= escape_javascript(render(partial: 'dmsf/folder_picker', locals: { tree: @folder_tree, files: @attach_files })) %>');
+  $('#ajax-modal').html('<%= escape_javascript(render(partial: 'dmsf/folder_picker', locals: { tree: @folder_tree, attach: true })) %>');
   showModal('ajax-modal', '560px');
   dmsfInitAttachPicker();
 <% else %>

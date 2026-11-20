@@ -74,19 +74,43 @@ class DmsfLinksControllerTest < RedmineDmsf::Test::TestCase
     { dmsf_link: { project_id: @project1.id, type: 'link_from', container: 'Issue', target_file_id: file_id } }
   end
 
-  def test_attach_dialog_lists_documents_in_a_tree
+  def attach_files(params = {})
+    get '/dmsf_links/attach_files', params: { project_id: @project1.id }.merge(params), xhr: true
+    response.body
+  end
+
+  def test_attach_dialog_lists_folders_but_loads_documents_on_demand
     post '/login', params: { username: 'jsmith', password: 'jsmith' }
     body = attach_dialog
     file = DmsfFile.find 4
-    assert_includes body, file.title
     assert_includes body, file.dmsf_folder.title
+    assert_not_includes body, file.title
+    assert_includes body, attach_files_dmsf_links_path(project_id: @project1.id)
   end
 
-  def test_attach_dialog_hides_deleted_documents
+  def test_attach_files_of_a_folder
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    file = DmsfFile.find 4
+    attach_files folder_id: file.dmsf_folder_id
+    assert_response :success
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', file.id.to_s
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', '1', count: 0 # The top level is not included
+  end
+
+  def test_attach_files_of_the_top_level
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    attach_files
+    assert_response :success
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', '1'
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', '4', count: 0
+  end
+
+  def test_attach_files_hides_deleted_documents
     post '/login', params: { username: 'jsmith', password: 'jsmith' }
     file = DmsfFile.find 3
     assert file.deleted?
-    assert_not_includes attach_dialog, %(value=\\"#{file.id}\\")
+    attach_files
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', file.id.to_s, count: 0
   end
 
   def test_attach_dialog_hides_system_folders
@@ -94,10 +118,37 @@ class DmsfLinksControllerTest < RedmineDmsf::Test::TestCase
     assert_not_includes attach_dialog, Issue.find(1).system_folder(create: true).title
   end
 
-  def test_attach_dialog_hides_documents_without_view_permission
+  def test_attach_files_of_a_system_folder_or_another_project_is_not_found
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    attach_files folder_id: Issue.find(1).system_folder(create: true).id
+    assert_response :not_found
+    attach_files folder_id: 3
+    assert_response :not_found
+  end
+
+  def test_attach_files_forbidden_without_view_permission
     post '/login', params: { username: 'jsmith', password: 'jsmith' }
     @role_manager.remove_permission! :view_dmsf_files
-    assert_not_includes attach_dialog, 'dmsf_attach_file_ids'
+    attach_files
+    assert_response :forbidden
+  end
+
+  def test_attach_files_search_shows_folder_paths
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    file = DmsfFile.find 5
+    attach_files q: file.title
+    assert_response :success
+    assert_select 'input[name=?][value=?]', 'dmsf_attach_file_ids[]', file.id.to_s
+    path = DmsfFolder.picker_paths(@project1, include_locked: true)[file.dmsf_folder_id]
+    assert_select '.dmsf-attach-path', text: path
+  end
+
+  def test_attach_files_search_needs_three_characters
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    attach_files q: 'te'
+    assert_response :success
+    assert_select 'input[name=?]', 'dmsf_attach_file_ids[]', count: 0
+    assert_select '.dmsf-attach-note'
   end
 
   def test_attach_dialog_is_used_for_a_container

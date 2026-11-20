@@ -1,0 +1,12 @@
+<%= render partial: 'dmsf/folder_picker_file', collection: entries, as: :file, locals: { search: search } %>
+<% if search && entries.empty? %>
+  <li class="dmsf-attach-note"><%= l(:label_no_data) %></li>
+<% elsif search && more %>
+  <li class="dmsf-attach-note"><%= l(:text_dmsf_refine_search, count: entries.size) %></li>
+<% elsif !search && local_assigns[:next_offset] %>
+  <li class="dmsf-attach-more">
+    <a href="#" data-folder-id="<%= folder_id %>" data-offset="<%= next_offset %>">
+      <%= l(:label_dmsf_show_more, count: remaining) %>
+    </a>
+  </li>
+<% end %>
