@@ -1,0 +1,54 @@
+# Redmine plugin for Document Management System "Features"
+#
+# This file is part of Redmine DMSF plugin.
+#
+# Redmine DMSF plugin is free software: you can redistribute it and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Redmine DMSF plugin is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with Redmine DMSF plugin. If not, see
+# <https://www.gnu.org/licenses/>.
+
+# Tags master with the plugin version from init.rb (e.g. v5.2.0-1.1.0) once the CI has passed on it.
+# Nothing happens if that tag already exists, so only merges that bump the version create a tag.
+
+name: "Tag release"
+on:
+  workflow_run:
+    workflows: ["GitHub CI"]
+    types: [completed]
+    branches: [master]
+permissions:
+  contents: write
+jobs:
+  tag:
+    # Only pushes to master that passed the CI, not pull requests
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the tested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Create the version tag
+        run: |
+          version=$(sed -n "s/^ *version '\([^']*\)'.*/\1/p" init.rb | head -n 1)
+          if [[ -z "$version" ]]; then
+            echo "::error::No version found in init.rb"
+            exit 1
+          fi
+          tag="v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+            echo "Tag $tag already exists, nothing to do"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "$version" "${{ github.event.workflow_run.head_sha }}"
+          git push origin "$tag"
+          echo "Created tag $tag"
