@@ -68,9 +68,9 @@ class ActiveStorageMigration < ActiveRecord::Migration[7.0]
       found ? $stdout.print("\n") : $stdout.print(" revision not found, skipped\n")
     end
     # Remove columns duplicated in ActiveStorage
-    remove_column :dmsf_file_revisions, :digest
-    remove_column :dmsf_file_revisions, :mime_type
-    remove_column :dmsf_file_revisions, :disk_filename
+    change_table :dmsf_file_revisions, bulk: true do |t|
+      t.remove :digest, :mime_type, :disk_filename
+    end
     remove_column :dmsf_files, :name
     # We need to keep the size despite the fact that it's duplicated in active_storage_blobs to speed up the main
     # document view
@@ -88,9 +88,11 @@ class ActiveStorageMigration < ActiveRecord::Migration[7.0]
   def down
     $stdout.puts "\n>> It could be a very long process. Be patient...\n"
     # Restore removed columns
-    add_column :dmsf_file_revisions, :digest, :string, limit: 64, default: '', null: false
-    add_column :dmsf_file_revisions, :mime_type, :string
-    add_column :dmsf_file_revisions, :disk_filename, :string, default: '', null: false
+    change_table :dmsf_file_revisions, bulk: true do |t|
+      t.string :digest, limit: 64, default: '', null: false
+      t.string :mime_type
+      t.string :disk_filename, default: '', null: false
+    end
     add_column :dmsf_files, :name, :string, default: '', null: false
     # Migrate attachments
     ActiveStorage::Attachment.find_each do |a|

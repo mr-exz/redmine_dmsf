@@ -78,8 +78,10 @@ class DmsfQueryTest < RedmineDmsf::Test::UnitTest
     assert_includes nodes.call, 'file-link-4'
     assert_includes nodes.call, 'folder-link-1'
 
+    # rubocop:disable Rails/SkipsModelValidations
     DmsfFile.find(4).update_column :deleted, DmsfFile::STATUS_DELETED
     DmsfFolder.find(1).update_column :deleted, DmsfFolder::STATUS_DELETED
+    # rubocop:enable Rails/SkipsModelValidations
 
     assert_not_includes nodes.call, 'file-link-4'
     assert_not_includes nodes.call, 'folder-link-1'

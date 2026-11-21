@@ -1,9 +1,9 @@
-<%# The folder tree dialog. With files it also lists documents, for choosing those instead of a folder. %>
-<% files = local_assigns[:files] %>
-<% root_files = files ? files.fetch(nil, []) : [] %>
-<h3 class="title"><%= files ? l(:title_attach_from_dms) : l(:label_dmsf_choose_folder) %></h3>
+<%# The folder tree dialog. With attach it also lists documents, for choosing those instead of a folder. Documents
+    are loaded when their folder is opened, and searched on the server, as a project may hold millions of them. %>
+<% attach = local_assigns[:attach] %>
+<h3 class="title"><%= attach ? l(:title_attach_from_dms) : l(:label_dmsf_choose_folder) %></h3>
 <input type="search" id="dmsf-folder-filter"
-       placeholder="<%= files ? l(:label_dmsf_filter_documents) : l(:label_dmsf_filter_folders) %>">
+       placeholder="<%= attach ? l(:label_dmsf_filter_documents) : l(:label_dmsf_filter_folders) %>">
 <ul class="dmsf-folder-tree">
   <li>
     <div class="dmsf-folder-row">
@@ -13,20 +13,29 @@
         <%= sprite_icon('folder', l(:link_documents)) %>
       </a>
     </div>
-    <% if tree.any? || root_files.any? %>
+    <% if tree.any? || attach %>
       <ul>
-        <%= render partial: 'dmsf/folder_picker_node', collection: tree, as: :node, locals: { files: files } %>
-        <%= render partial: 'dmsf/folder_picker_file', collection: root_files, as: :file %>
+        <%= render partial: 'dmsf/folder_picker_node', collection: tree, as: :node,
+                   locals: { attach: attach, parent_path: nil } %>
+        <% if attach %>
+          <li class="dmsf-attach-files" data-folder-id="" data-pending="1"></li>
+        <% end %>
       </ul>
     <% end %>
   </li>
 </ul>
+<% if attach %>
+  <ul id="dmsf-attach-results" class="dmsf-folder-tree" style="display: none;"></ul>
+<% end %>
 <p class="buttons">
   <button type="button" id="dmsf-folder-select" class="button-positive" disabled
-          <% if files %>
+          <% if attach %>
             data-url="<%= dmsf_links_path %>" data-project-id="<%= @project.id %>" data-container="<%= @container %>"
+            data-files-url="<%= attach_files_dmsf_links_path(project_id: @project.id) %>"
+            data-min-length="<%= DmsfFile::ATTACH_SEARCH_MIN_LENGTH %>"
+            data-loading="<%= l(:label_loading) %>"
           <% end %>>
-    <%= files ? l(:button_dmsf_attach) : l(:button_dmsf_select) %>
+    <%= attach ? l(:button_dmsf_attach) : l(:button_dmsf_select) %>
   </button>
   <button type="button" onclick="hideModal(this);"><%= l(:button_cancel) %></button>
 </p>

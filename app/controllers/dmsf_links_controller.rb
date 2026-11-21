@@ -63,13 +63,32 @@ class DmsfLinksController < ApplicationController
       end
     end
     @container = params[:container]
-    if @container
-      @folder_tree = DmsfFolder.picker_tree(@project, include_locked: true)
-      @attach_files = DmsfFile.attachable_in(@project)
-    end
+    # Documents of the Attach from DMS dialog are loaded by attach_files, folder by folder or by a search
+    @folder_tree = DmsfFolder.picker_tree(@project, include_locked: true) if @container
     respond_to do |format|
       format.html
       format.js
+    end
+  end
+
+  # Documents for the Attach from DMS dialog: a page of a folder's documents (folder_id, blank for the top level,
+  # and offset), or the documents found by q in the whole project
+  def attach_files
+    return render_403 unless User.current.allowed_to?(:view_dmsf_files, @project)
+
+    paths = DmsfFolder.picker_paths(@project, include_locked: true)
+    if params.key?(:q)
+      entries, more = DmsfFile.attachable_search(@project, paths, params[:q])
+      render partial: 'attach_files', locals: { entries: entries, search: true, more: more }
+    else
+      folder_id = params[:folder_id].presence&.to_i
+      return render_404 if folder_id && !paths.key?(folder_id)
+
+      offset = params[:offset].to_i
+      entries, total = DmsfFile.attachable_in_folder(@project, folder_id, offset: offset)
+      next_offset = offset + entries.size if offset + entries.size < total
+      render partial: 'attach_files', locals: { entries: entries, search: false, folder_id: folder_id,
+                                                next_offset: next_offset, remaining: total - offset - entries.size }
     end
   end
 

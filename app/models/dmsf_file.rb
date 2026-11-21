@@ -315,12 +315,56 @@ class DmsfFile < ApplicationRecord
     save!
   end
 
-  # Returns an array of projects that current user can copy file to
-  # Documents of the project the current user can attach to an issue, by folder id
-  def self.attachable_in(project)
-    visible.where(project_id: project.id).select(&:attachable_from_dms?).sort_by(&:title).group_by(&:dmsf_folder_id)
+  # A document offered by the Attach from DMS dialog; path is its folder's path in search results, nil at the top level
+  AttachEntry = Struct.new(:id, :title, :name, :path)
+  ATTACH_PAGE_SIZE = 100
+  ATTACH_SEARCH_LIMIT = 50
+  ATTACH_SEARCH_MIN_LENGTH = 3
+
+  # Documents of a folder (nil for the top level) the current user can attach to an issue, sorted by title.
+  # The folder must be one of DmsfFolder.picker_paths. Returns a page of AttachEntry and the number of all of them.
+  # Projects hold up to millions of documents, so only ids and names are read, never whole records.
+  def self.attachable_in_folder(project, folder_id, offset: 0, limit: ATTACH_PAGE_SIZE)
+    ids = visible.where(project_id: project.id, dmsf_folder_id: folder_id).pluck(:id)
+    entries = attach_entries(ids)
+    [entries[offset.to_i.clamp(0, entries.size), limit] || [], entries.size]
   end
 
+  # Documents of the given folders (nil for the top level) whose title or file name contains the term.
+  # Returns at most limit AttachEntry and whether there are more of them.
+  def self.attachable_search(project, folder_paths, term, limit: ATTACH_SEARCH_LIMIT)
+    term = term.to_s.strip.downcase
+    return [[], false] if term.length < ATTACH_SEARCH_MIN_LENGTH
+
+    pattern = "%#{sanitize_sql_like(term)}%"
+    # Candidates by any revision, as the newest one decides below
+    ids = DmsfFileRevision.visible.joins(:dmsf_file)
+                          .where(dmsf_files: { project_id: project.id, deleted: STATUS_ACTIVE,
+                                               dmsf_folder_id: [nil] + folder_paths.keys })
+                          .where('LOWER(dmsf_file_revisions.title) LIKE :p OR LOWER(dmsf_file_revisions.name) LIKE :p',
+                                 p: pattern)
+                          .distinct.limit(limit * 10).pluck(:dmsf_file_id)
+    folder_ids = where(id: ids).pluck(:id, :dmsf_folder_id).to_h
+    entries = attach_entries(ids).select do |entry|
+      entry.title.to_s.downcase.include?(term) || entry.name.to_s.downcase.include?(term)
+    end
+    entries.each { |entry| entry.path = folder_paths[folder_ids[entry.id]] } # nil at the top level
+    [entries.first(limit), entries.size > limit || ids.size >= limit * 10]
+  end
+
+  # AttachEntry of the given documents by their newest revision, sorted by title; documents without one are left out
+  def self.attach_entries(ids)
+    return [] if ids.empty?
+
+    latest = {}
+    DmsfFileRevision.visible.where(dmsf_file_id: ids).order(created_at: :desc, id: :desc)
+                    .pluck(:dmsf_file_id, :title, :name).each do |id, title, name|
+      latest[id] ||= AttachEntry.new(id, title, name)
+    end
+    latest.values.sort_by { |entry| [entry.title.to_s.downcase, entry.id] }
+  end
+
+  # Returns an array of projects that current user can copy file to
   def self.allowed_target_projects_on_copy
     projects = []
     if User.current.admin?

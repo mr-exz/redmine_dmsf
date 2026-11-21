@@ -185,6 +185,7 @@ module RedmineDmsf
             files, = DmsfUploadHelper.commit_files_internal uploaded_files, issue.project, target_folder,
                                                             context[:controller], issue, new_object: @new_object
             issue.link_dmsf_files(files)
+            propagate_links issue.project, files, uploaded_files, params[:dmsf_propagate_links], context[:controller]
           end
           # Attach DMS links
           issue.saved_dmsf_links.each do |l|
@@ -223,6 +224,47 @@ module RedmineDmsf
           return unless value.present? && DmsfFolder.upload_targets(issue.project).include?(value.to_s)
 
           [value == DmsfFolder::UPLOAD_TARGET_ROOT ? nil : DmsfFolder.find(value)]
+        end
+
+        # Links of the just uploaded files into other folders, e.g. one document shared by several departments,
+        # each of them under its own name. Requests come as { attachment key => { n => { folder_id:, name: } } }.
+        def propagate_links(project, files, uploaded_files, requests, controller)
+          return if requests.blank? || !User.current.allowed_to?(:file_manipulation, project)
+
+          targets = DmsfFolder.upload_targets(project)
+          errors = []
+          requests.each do |key, links|
+            name = uploaded_files[key] && uploaded_files[key][:name]
+            file = files.find { |f| f.name == name } if name
+            next unless file && links.respond_to?(:each_value)
+
+            links.each_value do |entry|
+              folder_id = entry[:folder_id].to_s
+              next unless targets.include?(folder_id)
+
+              folder = folder_id == DmsfFolder::UPLOAD_TARGET_ROOT ? nil : DmsfFolder.find(folder_id)
+              error = propagate_link(project, folder, file, entry[:name].to_s.scrub.strip.presence || file.title)
+              errors << error if error
+            end
+          end
+          return if errors.empty?
+
+          controller.flash[:warning] = l(:warning_dmsf_links_not_created, errors: errors.join('; '))
+        end
+
+        # Returns an error message, nil on success
+        def propagate_link(project, folder, file, name)
+          # Already linked there, e.g. by uploading a previous revision
+          return if DmsfLink.visible.exists?(project_id: project.id, dmsf_folder_id: folder&.id,
+                                             target_type: DmsfFile.model_name.to_s, target_id: file.id)
+
+          link = DmsfLink.new(project_id: project.id, dmsf_folder_id: folder&.id, target_project_id: file.project_id,
+                              target_id: file.id, target_type: DmsfFile.model_name.to_s, name: name,
+                              user: User.current)
+          return if link.save
+
+          Rails.logger.error link.errors.full_messages.to_sentence
+          "#{folder ? folder.dmsf_path_str : l(:link_documents)}/#{name}: #{link.errors.full_messages.to_sentence}"
         end
 
         # A file of the same name in the chosen folder gets a new revision, which continues from that file's version.

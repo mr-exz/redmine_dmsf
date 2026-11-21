@@ -27,7 +27,7 @@ Redmine::Plugin.register :redmine_dmsf do
   author_url 'https://github.com/picman/redmine_dmsf/graphs/contributors'
   author 'Vít Jonáš / Daniel Munn / Karel Pičman'
   description 'Document Management System Features'
-  version '5.3.1'
+  version '5.2.0-1.1.0'
 
   requires_redmine version_or_higher: '7.0.0'
 
@@ -130,7 +130,8 @@ Redmine::AccessControl.map do |map|
                                      notify_deactivate restore],
                       dmsf_upload: %i[upload_files upload commit_files commit delete_dmsf_attachment
                                       delete_dmsf_link_attachment multi_upload],
-                      dmsf_links: %i[new create destroy restore autocomplete_for_project autocomplete_for_folder],
+                      dmsf_links: %i[new create destroy restore autocomplete_for_project autocomplete_for_folder
+                                     attach_files],
                       dmsf_context_menus: [:dmsf]
                     }
     pmap.permission :file_delete,

@@ -310,6 +310,15 @@ class DmsfFileRevisionTest < RedmineDmsf::Test::UnitTest
     assert_equal 'application/octet-stream', @revision1.content_type
   end
 
+  # Browsers download a PDF sent with a generic type instead of displaying it
+  def test_content_type_of_a_pdf_uploaded_with_a_generic_type
+    @revision1.file.blob.filename = 'test.pdf'
+    %w[application/octet-stream binary/octet-stream application/x-pdf].each do |type|
+      @revision1.file.blob.content_type = type
+      assert_equal 'application/pdf', @revision1.content_type, type
+    end
+  end
+
   def test_update_parent_folder
     @revision4.title = 'Test File 4'
     assert @revision4.save
