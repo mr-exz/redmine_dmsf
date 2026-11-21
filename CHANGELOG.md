@@ -1,7 +1,7 @@
 Changelog for Redmine DMSF
 ==========================
 
-5.4.0 *2026-11-21*
+5.2.0-1.1.0 *2026-11-21*
 ------------------
 
     Linking an uploaded document into other folders
@@ -13,12 +13,12 @@ Changelog for Redmine DMSF
 * Bug: PDF documents were downloaded instead of displayed in Chrome and Firefox if the browser had uploaded them with
   a generic content type such as application/octet-stream
 
-5.3.1 *2026-11-15*
+5.2.0-1.0.1 *2026-11-15*
 ------------------
 
 * Bug: Links to documents and folders in the trash were still listed in DMS folders and led to a 404 page
 
-5.3.0 *2026-10-31*
+5.2.0-1.0.0 *2026-10-31*
 ----------
 
     Attaching and uploading documents on the issue form
