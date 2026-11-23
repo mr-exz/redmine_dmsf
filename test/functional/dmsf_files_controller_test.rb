@@ -91,6 +91,25 @@ class DmsfFilesControllerTest < RedmineDmsf::Test::TestCase
     assert @response.body.starts_with?('%PDF')
   end
 
+  def test_view_pdf_in_embedded_viewer
+    # The embedded viewer requests the file with an inline disposition; Chrome and Firefox download the document
+    # otherwise
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    get '/dmsf/files/8/test.pdf', params: { id: 8, download: 7, disposition: 'inline' }
+    assert_response :success
+    assert_equal 'application/pdf', @response.media_type
+    assert_equal 'inline', @response.headers['Content-Disposition'].split(';').first.strip
+  end
+
+  def test_view_pdf_download_link
+    # A download link without an explicit disposition must not change the attachment behavior
+    post '/login', params: { username: 'jsmith', password: 'jsmith' }
+    get '/dmsf/files/8/test.pdf', params: { id: 8, download: 7 }
+    assert_response :success
+    assert_equal 'application/pdf', @response.media_type
+    assert_equal 'attachment', @response.headers['Content-Disposition'].split(';').first.strip
+  end
+
   def delete_forbidden
     # Missing permissions
     post '/login', params: { username: 'jsmith', password: 'jsmith' }
