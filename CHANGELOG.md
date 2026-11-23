@@ -1,6 +1,12 @@
 Changelog for Redmine DMSF
 ==========================
 
+5.2.0-1.1.1 *2026-11-24*
+------------------
+
+* Bug: The embedded PDF viewer downloaded the document in Chrome and Firefox because the request of the viewer was
+  served with an attachment disposition
+
 5.2.0-1.1.0 *2026-11-21*
 ------------------
 

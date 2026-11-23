@@ -85,14 +85,17 @@ class DmsfFilesController < ApplicationController
           (@dmsf_file.text? || @dmsf_file.markdown? || @dmsf_file.textile?) && !@dmsf_file.html? &&
           formats.include?(:html)
       if @dmsf_file.pdf?
-        path = static_dmsf_file_path(@dmsf_file, filename: filename, download: @dmsf_file.last_revision&.id)
+        # The embedded viewer and the full view link must get an inline disposition, otherwise Chrome and Firefox
+        # download the document instead of displaying it
+        path = static_dmsf_file_path(@dmsf_file, filename: filename, download: @dmsf_file.last_revision&.id,
+                                                          disposition: 'inline')
         render action: 'pdf', locals: { path: path }
       else
         render action: 'document', locals: { content: @revision.file.download }
       end
     # Offer the file for download
     else
-      params[:disposition] = 'attachment' if params[:filename].present?
+      params[:disposition] = 'attachment' if params[:filename].present? && params[:disposition] != 'inline'
       if ActiveStorage::Blob.service.is_a?(ActiveStorage::Service::DiskService)
         # Speed up, if files are stored locally
         key = @revision.file.blob.key
